@@ -118,16 +118,12 @@ const partinfo_t
 		{	{0x3D00002B,	~0			},	"LPC1343F[HN33|BD48]",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
 
 		// the following are from UM10360, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014.
-		// @@@@ NOTE: these are the only parts in this family which have uniform sector sizes.  once that limitation
-		// @@@@  is lifted more parts from this family can be added.
 		//																									# of										block	block RAM
 		//		id			alt. ID			name															sectors							ram			size	address
 		{	{0x25001118,	0x25001110	},	"LPC1751FBD80",													8,			sectorMap4k,		8192,		1024,	0x10000300,	0			},
 		{	{0x25001121,	~0			},	"LPC1752FBD80",													16,			sectorMap4k,		16384,		1024,	0x10000300,	0			},
 
 		// the following are from UM10470, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014.
-		// @@@@ ONLY THE FIRST 16 4kB SECTORS (64kB) ARE AVAILABLE UNTIL NON-UNIFORM SECTOR SUPPORT IS ADDED
-		// @@@@ 
 		//		id			alt. ID			name															sectors							main ram	size	address
 		{	{0x27011132,	~0			},	"LPC1774",														18,			sectorMapLpc17xx,	32*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 128kB flash
 		{	{0x27191F43,	~0			},	"LPC1776",														22,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash

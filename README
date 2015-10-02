@@ -16,17 +16,19 @@ Please note:
         1) on exit the target is reset.  If reset isn't mapped this will do nothing and the
                 user will need to reset the target manually.  The GO command is not yet
                 supported (this is the only case where the GO command really makes sense).
-        2) only LPC111x, LPC13xx, and LPC81x devices are in the part description list.  Adding other
-                parts is simply a matter of adding lines to the list.  See partdesc.c.  As
-                this is recently developed this list is incomplete and may be inaccurate.
-                please forward changes and additions via:
-                  http://www.cosmodog.com/contact/
+        2) the set of supported devices is incomplete.  Adding more parts is simply a matter
+                of adding lines to the list.  See partdesc.c.  As this is recently developed
+                this list is incomplete and may be inaccurate.  Please forward changes and
+                additions via:
+                   http://www.cosmodog.com/contact/
 
 Supporting documentation:
         AN11229, UUencoding for UART ISP, Rev. 1 -- 22 June 2012
-	UM10601, LPC800 User Manaual, Rev. 1.3, 22 July 2013
+        UM10601, LPC800 User Manaual, Rev. 1.3, 22 July 2013
         UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013
-	UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012
+        UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012
+        UM10360, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014
+        UM10470, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014
 
 ================================================
 
@@ -50,6 +52,8 @@ Following is a list of the available options:
 
 -baud rate      set the baud rate to be used for communicating with the target
                 device.  Default is 115200.
+
+-tbaud rate     set the baud rate to be used for terminal mode.  Default is 115200.
 
 -clock rate     set the clock rate of the target device, in kHz.  Default is
                 12000 (12MHz).
@@ -75,7 +79,7 @@ Following is a list of the available options:
 -write          write the loaded file to flash on the target.
 
 -verify         compare the loaded file with the flash on the target.  Note that this
-                does not require writing the file first, though in that case it does
+                does not require writing the file first though in that case it does
                 require that code read protect is disabled.
 
 -dump address length      dump a block of memory from the device.  Address may be anywhere
@@ -84,9 +88,8 @@ Following is a list of the available options:
                 code read protect must be disabled.
 
 -term           after completion of other operations reset the target and drop to a
-                terminal to communicate with it.  The baud rate (currently) is not changed
-                so it will be the previously-specifed baud rate or 115200 if none was
-                specified.  Pressing <ESC> will reset the target (if -reset was configured)
+                terminal to communicate with it.  The baud rate is set by the -tbaud
+                option.  Pressing <ESC> will reset the target (if -reset was configured)
                 and pressing <CTRL-X> will exit.  All other key codes are passed to the
                 target.
 
@@ -99,6 +102,7 @@ Following is a list of the available options:
                 all messages at or below the selected level will be displayed (e.g., if level
                 is set to 2 then messages at levels 0, 1, and 2 will be displayed).
 
+-parts          dump a list of supported parts.
 
 ================================================
 
@@ -164,9 +168,8 @@ EXAMPLES
 
         Terminal
                 A serial terminal may be opened after other operations are complete.  Reset
-                and ISP are left in their negated states.  The baud rate remains as it was
-                for the previous operations.  The terminal can be entered without other
-                operations, though it will enter then exit ISP mode first (this should be
-                corrected at some point).  The command would be:
-                  lpcisp -reset ndtr -isp nrts -term /dev/ttyS0
+                and ISP are left in their negated states.  The baud rate is set by the
+                -tbaud option.  The terminal can be entered without other operations.  The
+                command would be:
+                  lpcisp -reset ndtr -isp nrts -tbaud 9600 -term /dev/ttyS0
 
