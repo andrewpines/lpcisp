@@ -1,0 +1,172 @@
+
+
+        lpcisp -- NXP ISP programming tool
+
+lpcisp is intended to be a clean and flexible way to identify, erase, read, and write
+NXP LPC-family components which support serial ISP (In-System Programming) mode.
+
+The basic usage is:
+        lpcisp [options] device
+
+The device argument is the serial device used to communicate with the
+target processor.  All options are preceded by a dash.  To get the
+current complete list of options invoke the program with no arguments.
+
+Please note:
+        1) on exit the target is reset.  If reset isn't mapped this will do nothing and the
+                user will need to reset the target manually.  The GO command is not yet
+                supported (this is the only case where the GO command really makes sense).
+        2) only LPC111x, LPC13xx, and LPC81x devices are in the part description list.  Adding other
+                parts is simply a matter of adding lines to the list.  See partdesc.c.  As
+                this is recently developed this list is incomplete and may be inaccurate.
+                please forward changes and additions via:
+                  http://www.cosmodog.com/contact/
+
+Supporting documentation:
+        AN11229, UUencoding for UART ISP, Rev. 1 -- 22 June 2012
+	UM10601, LPC800 User Manaual, Rev. 1.3, 22 July 2013
+        UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013
+	UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012
+
+================================================
+
+OPTIONS
+
+Following is a list of the available options:
+
+-reset ctrl     map the reset function to a serial device signal.  ctrl may be
+                one of dtr, ndtr, rts, or nrts.  lpcisp will assert (or negate)
+                the selected signal to reset the target.  Default is none.
+
+-isp ctrl       map the ISP function to a serial device signal.  ctrl may be
+                one of dtr, ndtr, rts, or nrts.  lpcisp will assert (or negate)
+                the selected signal to invoke ISP on the target.  Default is none.
+
+-hold           if invoked the ISP signal will be held through the programming
+                sequence.  this is for systems where the signal is used to take
+                competing serial devices off the bus during programming.  Default
+                is to negate ISP immediately after reset at start of programming
+                sequence.
+
+-baud rate      set the baud rate to be used for communicating with the target
+                device.  Default is 115200.
+
+-clock rate     set the clock rate of the target device, in kHz.  Default is
+                12000 (12MHz).
+
+-retry num      set the number of times to attempt to sync to the target device.
+                each attempt times out after about one second so this is
+                essentially the number of seconds to try to connect to the target
+                before aborting.  Default is 25.
+
+-bin filename   load a binary file to be written to or compared against the flash
+                memory of the target device.  Always loads at address 0x00000000.
+
+-hex filename   load an intel hex file to be written to or compared against the flash
+                memory of the target device.  Does not need to begin at address
+                0x00000000 but if it is to be written to the target it does need
+                to start on a page boundary.  This restriction may someday be lifted
+                if an application appears where it would be useful.
+
+-erase          erase the target device (all sectors).
+
+-echo           enable command echo (disabled by default).
+
+-write          write the loaded file to flash on the target.
+
+-verify         compare the loaded file with the flash on the target.  Note that this
+                does not require writing the file first, though in that case it does
+                require that code read protect is disabled.
+
+-dump address length      dump a block of memory from the device.  Address may be anywhere
+                within the device but it must be word-algned (multiple of four).  Length
+                must also be word-aligned.  If this is executed without erase/write then
+                code read protect must be disabled.
+
+-term           after completion of other operations reset the target and drop to a
+                terminal to communicate with it.  The baud rate (currently) is not changed
+                so it will be the previously-specifed baud rate or 115200 if none was
+                specified.  Pressing <ESC> will reset the target (if -reset was configured)
+                and pressing <CTRL-X> will exit.  All other key codes are passed to the
+                target.
+
+-verbose level  set the reporting level (0-4):
+                  0: errors only.
+                  1: minimum (only what was expressly requested, just memory dump).
+                  2: information; basic information about devices and process.  This is the default.
+                  3: debug process; details about the various tasks being executed.
+                  4: debug full; complete dump of data exchanged with target.
+                all messages at or below the selected level will be displayed (e.g., if level
+                is set to 2 then messages at levels 0, 1, and 2 will be displayed).
+
+
+================================================
+
+EXAMPLES
+
+        ID
+                The target processor can be identified without performing any operations on it.
+                Assume:
+                  the target has its reset signal connected to DTR
+                  the target has its ISP signal connected to RTS
+                  the serial device is /dev/ttyS0
+                The command would be:
+                  lpcisp -reset ndtr -isp nrts /dev/ttyS0
+
+                Note that DTR and RTS are inverted.  This is the correct mapping if they are
+                connected directly to the outputs of an RS232-to-logic level converter.
+
+                if successful lpcisp will report something like the following:
+                  device information:
+                     part number:  LPC1112FHN33/[101|102]
+                     ID:           0x2524d02b
+                     flash size:   16384 bytes
+                     SRAM size:    2048 bytes
+                     UID:          f5000001 4ff53bb2 53581b51 0707212d
+                     boot version: 1.7
+
+                The ID, UID and boot version are read from the part.  The rest are looked up
+                based on the ID.
+
+
+        Erase
+                To erase the device from the previous example the command would be:
+                  lpcisp -reset ndtr -isp nrts -erase /dev/ttyS0
+
+
+        Write
+                The most common task is to write an image to a device.  To write an Intel
+                hex file named image.hex to the target device in the above examples the
+                command would be:
+                  lpcisp -reset ndtr -isp nrts -hex image.hex -erase -write /dev/ttyS0
+
+
+        Verify
+                To verify the code after writing in the above example simply add the -verify
+                option:
+                  lpcisp -reset ndtr -isp nrts -hex image.hex -erase -write -verify /dev/ttyS0
+
+                Alternatively, a previously-written image can be verified against a hex file
+                if code protect is disabled.  This will report the result but will not alter
+                the target device:
+                  lpcisp -reset ndtr -isp nrts -hex image.hex -verify /dev/ttyS0
+
+
+        Dump
+                Similar to verify, a block of word-aligned memory can be dumped out.  To
+                read 256 bytes starting at address 0x000200 from the target device in the
+                previous examples the command would be:
+                  lpcisp -reset ndtr -isp nrts -dump 0x200 256  /dev/ttyS0
+
+                Note that the address and length arguments can be either decimal or hex
+                (preceded by 0x).  Again, this only works after erasing the entire device
+                or if code read protect is disabled.
+
+        Terminal
+                A serial terminal may be opened after other operations are complete.  Reset
+                and ISP are left in their negated states.  The baud rate remains as it was
+                for the previous operations.  The terminal can be entered without other
+                operations, though it will enter then exit ISP mode first (this should be
+                corrected at some point).  The command would be:
+                  lpcisp -reset ndtr -isp nrts -term /dev/ttyS0
+

@@ -1,0 +1,45 @@
+	lpcisp -- NXP LPCxxxx ISP
+
+	change log
+	  0.0.1 -- 16 February, 2015
+	    first release
+	  0.0.2 -- 16 February, 2015
+	    corrected clock ISP command call (divides clock by 1000)
+	  0.0.3 -- 17 February, 2015
+	    added LPC8xx part definitions
+	  0.0.4 -- 20 March, 2015
+	    added support to tbaud argument (set baud rate for terminal)
+	  0.0.5 -- 6 May, 2015
+	    don't enter terminal mode if an error occurred in a prior step
+	  0.0.6 -- 21 May, 2015
+	    added support for devices which don't uuencode their data when reading/writing RAM
+	  0.0.7 -- 23 May, 2015
+	    added -parts option to dump list of supported parts
+		if -term is used without other operations go straight to term, don't go through Sync() first
+	  0.0.8 -- 17 June, 2015
+	    added support for LPC13xx parts
+	    fixed handling of line termination
+		added -echo command to allow enabling echo
+	  0.0.9 -- 2 July, 2015
+	    fixed ReadString() so it just ignores CR (works with CRLF or LF)
+	  0.0.10 -- 3 July, 2015
+	    set ReadString() to stop on either CR or LF -- !!! this causes problems for binary transfers !!!
+	  0.0.11 -- 6 July, 2015
+	  	changed ReadString() again to try to manage CRLF correctly.
+	  	improved max verbose reporting
+ 	  0.0.12 -- 7 August, 2015
+ 	    don't report error if terminal is only requested operation (doesn't read device ID, was complaining it didn't know what kind of device it was)
+ 		added error message if no serial device was specified
+	  0.0.13 -- 31 August, 2015
+	    added support for LPC17xx (need non-uniform sector support for full function)
+	    changed OpenDevice() to configure only necessary flags (seems to communicate more reliably)
+	  0.0.14 -- 1 September, 2015
+	    exit on various failures (stop processing, don't drop to terminal mode)
+	    corrected flags for LPC17xx to include uuencode
+	    added support for non-uniform sector sizes
+
+	to do:
+		add support for lots more parts
+		allow write to start on non-page boundaries
+		if reset is undefined, use the GO command to try to start operation
+		enable XON/OFF handshaking where appropriate

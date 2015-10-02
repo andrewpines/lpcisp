@@ -1,0 +1,21 @@
+
+
+Build should be as simple as:
+	make clean
+	make
+	make install
+
+You may need root permissions to install; it simply copies the
+executable to /usr/local/bin.
+
+lpcisp should build with no warnings.  If you see any warnings please
+report them via the link below.
+
+lpcisp tries to use just minimal C library support, so it doesn't
+depend on anything unusual.  It's been tested on OS X and Linux. No
+effort has been made to build it under Windows.  The system-specific
+bits should be limited to asyncserial.c, so porting shouldn't be
+overly difficult.  If you manage to make it build under Windows and
+want your changes rolled into a future version please send them via
+this contact page:
+	http://www.cosmodog.com/contact/
