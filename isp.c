@@ -16,7 +16,7 @@ static int
 	ispHold;	// true to hold ISP asserted through programming sequence
 
 static unsigned char
-	lineTermination=TERM_CRLF;
+	lineTermination=TERM_ANY;
 
 //============ private functions ==============================================
 
@@ -105,7 +105,7 @@ void SetLineTermination(unsigned char t)
 	lineTermination=t;
 }
 
-static int ReadStringCRLF(int fd, char *string)
+static int ReadStringAny(int fd, char *string)
 // read a string from the device, return non-zero on success (complete string read),
 // zero on failure (didn't read complete string within timeout period).  stop on the
 // first CR or LF.  Throw away any leading CRs or LFs, assume they're left over from
@@ -137,6 +137,60 @@ static int ReadStringCRLF(int fd, char *string)
 				return(1);
 			}
 			i++;
+		}
+	}
+	// failed, exit false
+	return(0);
+}
+
+
+static int ReadStringCRLF(int fd, char *string)
+// read a string from the device, return non-zero on success (complete string read),
+// zero on failure (didn't read complete string within timeout period).  stop on the
+// CRLF.  Ignore any embedded control characters (including CR or LF) prior to seeing
+// the CRLF sequence.
+{
+	unsigned char
+		c;
+	int
+		i,
+		t;
+
+	i=0;
+	t=0;
+	ReportString(REPORT_DEBUG_FULL,"<-- ");
+	while(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
+	{
+		ReportCharCtrl(REPORT_DEBUG_FULL,c);
+		
+		if(c=='\r')
+		{
+			// carriage return.  start of termination sequence (do not store character)
+			t=1;
+		}
+		else if(c=='\n')
+		{
+			// line feed.  end of termination sequence (if preceeded by CR), otherwise ignore
+			if(t)
+			{
+				string[i]='\0';
+				ReportString(REPORT_DEBUG_FULL," [");
+				ReportStringCtrl(REPORT_DEBUG_FULL,string);
+				ReportString(REPORT_DEBUG_FULL,"]\n");
+				return(1);
+			}
+			t=0;
+		}
+		else if(c>=' ')
+		{
+			// non-control character, add to string
+			string[i++]=c;
+			t=0;
+		}
+		else
+		{
+			// other control character, ignore
+			t=0;
 		}
 	}
 	// failed, exit false
@@ -230,8 +284,10 @@ static int ReadString(int fd, char *string)
 			return(ReadStringCR(fd,string));
 		case TERM_LF:
 			return(ReadStringLF(fd,string));
-		default:
+		case TERM_CRLF:
 			return(ReadStringCRLF(fd,string));
+		default:
+			return(ReadStringAny(fd,string));
 	}
 }
 
