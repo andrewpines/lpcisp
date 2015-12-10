@@ -466,8 +466,8 @@ int main(int argc,char *argv[])
 							fail=(ChangeBaudRate(fd,baud)<0);
 							if(!fail)
 							{
-								// until we know what kind of device this is use CRLF termination
-								SetLineTermination(TERM_CRLF);
+								// until we know what kind of device this is use default termination (accept CR, LF, or CRLF)
+								SetLineTermination(TERM_ANY);
 								fail=!Sync(fd,clock*1000,retries);
 								if(!fail)
 								{
@@ -554,21 +554,30 @@ int main(int argc,char *argv[])
 						if(!fail&&verify)
 						{
 							unsigned int
-								addr;
+								addr,
+								s;
+							
+							s=0;
+							if((partInfo.flags&VECT_REMAP)&&(start<64))
+							{
+								// device remaps vector table in ISP mode, so we can't verify that section
+								s=64;
+							}
 							ReportString(REPORT_INFO,"verifying... 0x%08x",start);
 							for(addr=start;!fail&&(addr<start+length);addr+=256)
 							{
 								fail=(ReadFromTarget(fd,buffer,addr,256,&partInfo)<=0);
 								if(!fail)
 								{
-									for(i=0;!fail&&(i<MIN(length-(addr-start),256));i++)
+									for(i=s;!fail&&(i<MIN(length-(addr-start),256));i++)
 									{
 										fail=buffer[i]!=data[addr-start+i];
+										if(fail)
+										{
+											ReportString(REPORT_INFO," -- mismatch at 0x%08x, is 0x%02x, should be 0x%02x\n",addr+i,buffer[i],data[addr-start+i]);;
+										}
 									}
-									if(fail)
-									{
-										ReportString(REPORT_INFO," -- mismatch at 0x%08x, is 0x%02x, should be 0x%02x\n",addr+i,buffer[i],data[addr-start+i]);;
-									}
+									s=0;
 								}
 								if(!fail)
 								{
