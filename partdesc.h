@@ -25,10 +25,12 @@ typedef struct
 }partinfo_t;
 
 #define UUENCODE	(1<<0)	// set if part expects data to be uuencoded and checksummed
-#define TERM_CRLF	(0<<1)	// default, no flags set
+#define TERM_ANY	(0<<1)	// default, no flags set
 #define TERM_CR		(1<<1)
 #define TERM_LF		(2<<1)
+#define TERM_CRLF	(3<<1)
 #define TERM_MASK	(3<<1)
+#define VECT_REMAP	(1<<3)	// set true if device remaps the first 64 bytes (vectors) in ISP mode, thus making that section un-verifiable
 
 void ReportPartInfo(int level,partinfo_t *p);
 int GetPartInfo(int fd,partinfo_t *p);

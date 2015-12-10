@@ -68,11 +68,11 @@ const partinfo_t
 		// the following are from UM10601, LPC800 User manual, Rev. 1.3, 22 July 2013.
 		//																									# of										block	block RAM
 		//		id			alt. ID			name															sectors							ram			size	address		flags
-		{	{ 0x00008100,	~0			},	"LPC810M021FN8",												4,			sectorMap1k,		1024,		256,	0x10000300,	0			},
-		{	{ 0x00008110,	~0			},	"LPC811M001JDH16",												8,			sectorMap1k,		2048,		1024,	0x10000300,	0			},
-		{	{ 0x00008120,	~0			},	"LPC812M101JDH16",												16,			sectorMap1k,		4096,		1024,	0x10000300,	0			},
-		{	{ 0x00008121,	~0			},	"LPC812M101JD20",												16,			sectorMap1k,		4096,		1024,	0x10000300,	0			},
-		{	{ 0x00008122,	~0			},	"LPC812M101JDH20",												16,			sectorMap1k,		4096,		1024,	0x10000300,	0			},
+		{	{ 0x00008100,	~0			},	"LPC810M021FN8",												4,			sectorMap1k,		1024,		256,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008110,	~0			},	"LPC811M001JDH16",												8,			sectorMap1k,		2048,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008120,	~0			},	"LPC812M101JDH16",												16,			sectorMap1k,		4096,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008121,	~0			},	"LPC812M101JD20",												16,			sectorMap1k,		4096,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008122,	~0			},	"LPC812M101JDH20",												16,			sectorMap1k,		4096,		1024,	0x10000300,	TERM_CRLF	},
 
 		// the following are from UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013.
 		//																									# of										block	block RAM
@@ -145,17 +145,17 @@ const partinfo_t
 		// the following are from UM10211, LPC23xx User manual, Rev. 4.1 -- 5 September 2012
 		//																									# of										block	block RAM
 		//		id			alt. ID			name															sectors							main ram	size	address
-		{	{0x1600f701,	~0			},	"LPC2361",														9,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE	},
-		{	{0x1600ff22,	~0			},	"LPC2362",														11,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1600f902,	~0			},	"LPC2364",														11,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE	},
-		{	{0x1600e823,	~0			},	"LPC2365",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1600f923,	~0			},	"LPC2366",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1600e825,	~0			},	"LPC2367",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1600f925,	~0			},	"LPC2368",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1700e825,	~0			},	"LPC2377",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1700fd25,	~0			},	"LPC2378",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1700ff35,	~0			},	"LPC2387",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x1800ff35,	~0			},	"LPC2388",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1600f701,	~0			},	"LPC2361",														9,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	// vectors are remapped in ISP
+		{	{0x1600ff22,	~0			},	"LPC2362",														11,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   mode so skip that area when
+		{	{0x1600f902,	~0			},	"LPC2364",														11,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   verifying
+		{	{0x1600e823,	~0			},	"LPC2365",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1600f923,	~0			},	"LPC2366",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1600e825,	~0			},	"LPC2367",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1600f925,	~0			},	"LPC2368",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1700e825,	~0			},	"LPC2377",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1700fd25,	~0			},	"LPC2378",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1700ff35,	~0			},	"LPC2387",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1800ff35,	~0			},	"LPC2388",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
 	},
 	partDefUnknown=
 	{
