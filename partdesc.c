@@ -7,30 +7,30 @@
 // block size is the unit which is transfered/written to flash (typically want as large as available RAM will allow)
 // block address is the address in RAM used for the data block to write to flash (must avoid locations used by the bootloader)
 // some devices have two IDs.  if the second is unused set to ~0.
-
-// the amount of flash is indicated (mostly) by the base part number:
-//  LPC1111:          8kB
-//  LPC1112:          16kB
-//  LPC1113:          24kB
-//  LPC1114/LPC11D14: 32kB
-//  LPC1114/323:      48kB
-//  LPC1114/333:      56kB
-//  LPC1115:          64kB
-// the letter after LPC111x indicates the temperature range (F=-40 to 85C, J=-40 to 105C)
-// the next two digits indicate the package (e.g., 33 indicates it's a 33 pad QFN package)
-// the three digit code after the slash indicates the processor series and resources (see page 4 of the User Manual):
-// 	first digit:
-// 		1: 2k SRAM
-// 		2: 4k SRAM
-// 		3: 8k SRAM
-// 	third digit:
-// 		1: LPC100
-// 		2: LPC100L (LPC1000 plus power profiles for lower power consumption)
-// 		3: LPC100XL (LPC1000L plus IAP flash page erase, extra pinning, second SPI block)
-// it's not clear what differentiates the HI33 parts from the HN33 parts.
+//
+// some devices use uuencoded ASCII to transfer binary data while others transfer binary data directly.  Transfering binary data
+// as binary is problematic because the command protocol is ASCII and it needs to switch between ASCII and binary.  This creates
+// issues at the edges as it changes modes because line termination is not handled consistently across all parts.  When sending or
+// receiving binary data the presence/absence/ambiguity of the second character of line termination makes it unclear whether
+// that second character is the second part of the termination or the first binary character.  Historically different OS's use
+// different termination:
+//  CR -- pre-OSX Mac
+//  LF -- Unix
+//  CRLF -- Windows
+// Without getting into a holy war over which is optimal, the reality is that both CRLF and LF exist in the world and both should
+// be supported.  ideally NXP would have engineered all parts to expect LF as the terminator and would ignore any CRs, since even
+// Apple has abandonded CR-only line termination.  this would mean that CRLF or LF would work equally well, plus switching to
+// binary would always work as expected because it would skip over any CRs and terminate on the LF.  No such luck.  inspection
+// reveals that they couldn't even manage to be consistent within a single part.  Here are some examples of tested components:
+//   LPC1788: consistently accepts CR, LF, or CRLF; returns either CRLF or echos the termination that was sent to it (context-dependent)
+//   LPC1313: accepts CRLF; sometimes returns CR (after 'Synchronized'), other times returns CRLF
+//
+//  to handle this
+// consistently an extra flag is needed to indicate what form of termination to use for a given part.
 //
 // this table is incomplete and likely has errors.  please forward corrections and additions via this page:
-//    http://www.cosmodog.com/contact/
+//    https://github.com/andrewpines/lpcisp/issues
+
 
 static const int
 	sectorMap1k[]=
@@ -41,7 +41,7 @@ static const int
 	},
 	sectorMap4k[]=
 	{
-		// 1kB uniform sector map
+		// 4kB uniform sector map
 		4096,4096,4096,4096,4096,4096,4096,4096,
 		4096,4096,4096,4096,4096,4096,4096,4096,
 	},
@@ -52,8 +52,15 @@ static const int
 		4096,4096,4096,4096,4096,4096,4096,4096,
 		32768,32768,32768,32768,32768,32768,32768,32768,
 		32768,32768,32768,32768,32768,32768,32768,32768,
+	},
+	sectorMapLpc23xx[]=
+	{
+		// LPC23xx non-uniform sector map
+		4096,4096,4096,4096,4096,4096,4096,4096,			// 0-7 are 4kB
+		32768,32768,32768,32768,32768,32768,32768,32768,	// 8-21 are 32kB
+		32768,32768,32768,32768,32768,32768,
+		4096,4096,4096,4096,4096,4096,						// 22-27 are 4kB
 	};
-
 
 const partinfo_t
 	partDef[]=
@@ -124,6 +131,7 @@ const partinfo_t
 		{	{0x25001121,	~0			},	"LPC1752FBD80",													16,			sectorMap4k,		16384,		1024,	0x10000300,	0			},
 
 		// the following are from UM10470, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014.
+		//																									# of										block	block RAM
 		//		id			alt. ID			name															sectors							main ram	size	address
 		{	{0x27011132,	~0			},	"LPC1774",														18,			sectorMapLpc17xx,	32*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 128kB flash
 		{	{0x27191F43,	~0			},	"LPC1776",														22,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
@@ -133,6 +141,21 @@ const partinfo_t
 		{	{0x281D1F43,	~0			},	"LPC1786",														22,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
 		{	{0x281D3747,	~0			},	"LPC1787",														30,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
 		{	{0x281D3F47,	~0			},	"LPC1788",														30,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
+
+		// the following are from UM10211, LPC23xx User manual, Rev. 4.1 -- 5 September 2012
+		//																									# of										block	block RAM
+		//		id			alt. ID			name															sectors							main ram	size	address
+		{	{0x1600f701,	~0			},	"LPC2361",														9,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE	},
+		{	{0x1600ff22,	~0			},	"LPC2362",														11,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1600f902,	~0			},	"LPC2364",														11,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE	},
+		{	{0x1600e823,	~0			},	"LPC2365",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1600f923,	~0			},	"LPC2366",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1600e825,	~0			},	"LPC2367",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1600f925,	~0			},	"LPC2368",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1700e825,	~0			},	"LPC2377",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1700fd25,	~0			},	"LPC2378",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1700ff35,	~0			},	"LPC2387",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x1800ff35,	~0			},	"LPC2388",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE	},
 	},
 	partDefUnknown=
 	{

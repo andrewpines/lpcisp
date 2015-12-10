@@ -60,10 +60,12 @@ static void WriteDevice(int theTTY,int fd)
 				}
 				if(buffer[idx]==resetCode)
 				{
-					// reset the target
-					action=1;
-					ReportString(REPORT_INFO,"\n   resetting target...\n");
-					ExitISPMode(fd);
+					// reset the target, if able
+					if(ResetTarget(fd)>=0)
+					{
+						action=1;
+						ReportString(REPORT_INFO,"\n   resetting target...\n");
+					}
 				}
 			}
 			// send characters to the serial device (read return value to silence the compiler)

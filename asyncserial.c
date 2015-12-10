@@ -153,60 +153,53 @@ int ChangeBaudRate(int fd, int baud)
 			cfsetspeed(&terminalParams,baudCode);		// Set baud
 			if(tcsetattr(fd,TCSANOW,&terminalParams)>=0)
 			{
-				printf("changed baud rate to %d\n",baud);
-				return(1);
+				return(0);
 			}
-		}
-	}
-	return(0);
-}
-
-int OpenDevice(char *name, unsigned int baud)
-// open the device that we are going to communicate through
-// set it to the passed baud rate, raw mode
-// return descriptor number on success, -1 on error
-{
-	int
-		baudCode,
-		fd;
-	struct termios
-		terminalParams;			// parameters for the serial port
-
-	baudCode=GetBaudCode(baud);
-	if(baudCode>=0)
-	{
-		fd=open(name,O_NDELAY|O_RDWR|O_NOCTTY|O_NONBLOCK);
-		if(fd>=0)
-		{
-			cfmakeraw(&terminalParams);					// start with basic raw settings
-			terminalParams.c_cflag=(CREAD|CLOCAL|CS8);
-//			terminalParams.c_cflag|=(CREAD|CLOCAL|CS8);
-//			terminalParams.c_cflag&=~CRTSCTS;			// clear flow control (no hardware handshake)
-			terminalParams.c_iflag&=~(IXON|IXOFF);		// disable XON/XOFF
-			cfsetspeed(&terminalParams,baudCode);		// Set baud
-			terminalParams.c_cc[VMIN]=MIN_CHARS;		// read returns immediately if no characters
-			terminalParams.c_cc[VTIME]=CHAR_TIMEOUT;
-
-			if(tcsetattr(fd,TCSANOW,&terminalParams)>=0)
-			{
-				tcflow(fd,TCOON);
-				tcflush(fd,TCIOFLUSH);
-				return(fd);
-			}
-			else
-			{
-				ReportString(REPORT_ERROR,"failed to set terminal parameters for device '%s'\n",name);
-			}
-			close(fd);
-		}
-		else
-		{
-			ReportString(REPORT_ERROR,"failed to open device '%s': %s\n",name,strerror(errno));
 		}
 	}
 	else
 	{
 		ReportString(REPORT_ERROR,"invalid baud rate: %d\n",baud);
+	}
+	return(-1);
+}
+
+int OpenDevice(char *name)
+// open the device that we are going to communicate through
+// set it to the passed baud rate, raw mode
+// return descriptor number on success, -1 on error
+{
+	int
+		fd;
+	struct termios
+		terminalParams;			// parameters for the serial port
+
+	fd=open(name,O_NDELAY|O_RDWR|O_NOCTTY|O_NONBLOCK);
+	if(fd>=0)
+	{
+		cfmakeraw(&terminalParams);					// start with basic raw settings
+		terminalParams.c_cflag=(CREAD|CLOCAL|CS8);
+//		terminalParams.c_cflag|=(CREAD|CLOCAL|CS8);
+//		terminalParams.c_cflag&=~CRTSCTS;			// clear flow control (no hardware handshake)
+		terminalParams.c_iflag&=~(IXON|IXOFF);		// disable XON/XOFF
+		terminalParams.c_cc[VMIN]=MIN_CHARS;		// read returns immediately if no characters
+		terminalParams.c_cc[VTIME]=CHAR_TIMEOUT;
+		cfsetspeed(&terminalParams,GetBaudCode(9600));	// Set default baud (can't fail)
+		if(tcsetattr(fd,TCSANOW,&terminalParams)>=0)
+		{
+			tcflow(fd,TCOON);
+			tcflush(fd,TCIOFLUSH);
+			return(fd);
+		}
+		else
+		{
+			ReportString(REPORT_ERROR,"failed to set terminal parameters for device '%s'\n",name);
+		}
+		close(fd);
+	}
+	else
+	{
+		ReportString(REPORT_ERROR,"failed to open device '%s': %s\n",name,strerror(errno));
 	}
 	return(-1);
 }

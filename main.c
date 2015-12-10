@@ -456,35 +456,42 @@ int main(int argc,char *argv[])
 				fail=(fd>=0);
 				if(!fail)
 				{
-					fd=OpenDevice(*argv,baud);
+					fd=OpenDevice(*argv);
 					fail=(fd<0);
 					if(!fail)
 					{
 						// if term was the only action requested skip the synchronization step and drop directly to terminal
 						if(erase||data||(dumpLength>0)||!term)
 						{
-							fail=!Sync(fd,clock*1000,retries);
+							fail=(ChangeBaudRate(fd,baud)<0);
 							if(!fail)
 							{
-								Echo(fd,echo);
-								fail=(GetPartInfo(fd,&partInfo)<0);
+								// until we know what kind of device this is use CRLF termination
+								SetLineTermination(TERM_CRLF);
+								fail=!Sync(fd,clock*1000,retries);
 								if(!fail)
 								{
-									ReportPartInfo(REPORT_INFO,&partInfo);
-									if(partInfo.numSectors)
+									Echo(fd,echo);
+									fail=(GetPartInfo(fd,&partInfo)<0);
+									if(!fail)
 									{
-										// only unlock device if it was identified
-										Unlock(fd);
+										SetLineTermination(partInfo.flags&TERM_MASK);
+										ReportPartInfo(REPORT_INFO,&partInfo);
+										if(partInfo.numSectors)
+										{
+											// only unlock device if it was identified
+											Unlock(fd);
+										}
+									}
+									else
+									{
+										ReportString(REPORT_ERROR,"failed to identify part\n");
 									}
 								}
 								else
 								{
-									ReportString(REPORT_ERROR,"failed to identify part\n");
+									ReportString(REPORT_ERROR,"failed to detect target device on \"%s\" at %d baud\n",*argv,baud);
 								}
-							}
-							else
-							{
-								ReportString(REPORT_ERROR,"failed to detect target device on \"%s\" at %d baud\n",*argv,baud);
 							}
 						}
 					}
@@ -627,9 +634,12 @@ int main(int argc,char *argv[])
 				// go into terminal mode with current line settings
 				if(tbaud!=baud)
 				{
-					ChangeBaudRate(fd,tbaud);
+					fail=(ChangeBaudRate(fd,tbaud)<0);
 				}
-				fail=!Terminal(fd);
+				if(!fail)
+				{
+					fail=!Terminal(fd);
+				}
 			}
 
 			CloseDevice(fd);

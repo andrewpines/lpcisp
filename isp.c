@@ -15,15 +15,8 @@ static int
 	echo=1,		// true when sent characters are expected to echo back, false when not (echo disabled by command to device)
 	ispHold;	// true to hold ISP asserted through programming sequence
 
-typedef enum
-{
-	TERM_CR=0,
-	TERM_LF,
-	TERM_CRLF,
-}term_t;
-
-static term_t
-	termination=TERM_CRLF;	// @@@ this will need to be set by the part info structure
+static unsigned char
+	lineTermination=TERM_CRLF;
 
 //============ private functions ==============================================
 
@@ -105,13 +98,20 @@ static int ReadBuffer(int fd, unsigned char *buffer, unsigned int length)
 	}
 	return(i);
 }
+	
+void SetLineTermination(unsigned char t)
+// set line termination mode
+{
+	lineTermination=t;
+}
 
-static int ReadString(int fd, char *string)
+static int ReadStringCRLF(int fd, char *string)
 // read a string from the device, return non-zero on success (complete string read),
-// zero on failure (didn't read complete string within timeout period).  since the
-// device's bootloaders don't consistently handle line termination stop on the first
-// CR or LF.  Throw away any leading CRs or LFs, assume they're left over from
-// the end of the previous message.  @@@@ this needs to deal with binary transfers @@@@
+// zero on failure (didn't read complete string within timeout period).  stop on the
+// first CR or LF.  Throw away any leading CRs or LFs, assume they're left over from
+// the end of the previous message.  this will work with CR, LF, or CRLF termination
+// but creates ambiguity when changing modes in devices which transfer data in binary
+// instead of uuencoded-ASCII.
 {
 	unsigned char
 		c;
@@ -141,6 +141,98 @@ static int ReadString(int fd, char *string)
 	}
 	// failed, exit false
 	return(0);
+}
+
+static int ReadStringLF(int fd, char *string)
+// read a string from the device, return non-zero on success (complete string read),
+// zero on failure (didn't read complete string within timeout period).  stop on the
+// first LF and ignore (drop) CRs.  this will correctly stop after either CRLF or LF.
+{
+	unsigned char
+		c;
+	int
+		i;
+
+	i=0;
+	ReportString(REPORT_DEBUG_FULL,"<-- ");
+	while(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
+	{
+		ReportCharCtrl(REPORT_DEBUG_FULL,c);
+		// ignore all CRs
+		if(c!='\r')
+		{
+			// if not first character or not newline, add to buffer (throw away leading LFs)
+			if(i||(c!='\n'))
+			{
+				string[i]=c;
+				if(i&&(c=='\n'))
+				{
+					// not first character and is LF, zero-terminate the string.
+					string[i]='\0';
+					ReportString(REPORT_DEBUG_FULL," [");
+					ReportStringCtrl(REPORT_DEBUG_FULL,string);
+					ReportString(REPORT_DEBUG_FULL,"]\n");
+					return(1);
+				}
+				i++;
+			}
+		}
+	}
+	// failed, exit false
+	return(0);
+}
+
+static int ReadStringCR(int fd, char *string)
+// read a string from the device, return non-zero on success (complete string read),
+// zero on failure (didn't read complete string within timeout period).  stop on the
+// first CR and ignore (drop) LFs.  this is here for completeness, nothing currently
+// uses it.
+{
+	unsigned char
+		c;
+	int
+		i;
+
+	i=0;
+	ReportString(REPORT_DEBUG_FULL,"<-- ");
+	while(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
+	{
+		ReportCharCtrl(REPORT_DEBUG_FULL,c);
+		// ignore all LFs
+		if(c!='\n')
+		{
+			// if not first character or not carriage return, add to buffer (throw away leading CRs)
+			if(i||(c!='\r'))
+			{
+				string[i]=c;
+				if(i&&(c=='\r'))
+				{
+					// not first character and is CR, zero-terminate the string.
+					string[i]='\0';
+					ReportString(REPORT_DEBUG_FULL," [");
+					ReportStringCtrl(REPORT_DEBUG_FULL,string);
+					ReportString(REPORT_DEBUG_FULL,"]\n");
+					return(1);
+				}
+				i++;
+			}
+		}
+	}
+	// failed, exit false
+	return(0);
+}
+
+static int ReadString(int fd, char *string)
+{
+	switch(lineTermination)
+	{
+		case TERM_CR:
+			return(ReadStringCR(fd,string));
+		case TERM_LF:
+			return(ReadStringLF(fd,string));
+		default:
+			return(ReadStringCRLF(fd,string));
+	}
 }
 
 static void SetControlPin(int fd, int pin, int state)
@@ -187,14 +279,14 @@ static void SetISP(int fd, int state)
 	SetControlPin(fd,ispPin,state);
 }
 
-static char *AddTermination(char *str, term_t term)
-// add specified line termination to string.
+static char *AddTermination(char *str)
+// add current line termination to string.
 {
 	size_t
 		len;
 	
 	len=strlen(str);
-	switch(termination)
+	switch(lineTermination)
 	{
 		case TERM_CR:
 			str[len++]='\r';
@@ -234,7 +326,7 @@ static int SendCommand(int fd, const char *command, char *response, const char *
 	// parts, apply termination as set by the variable "termination"
 	strcpy(str,command);
 	len=strlen(str);
-	AddTermination(str,termination);
+	AddTermination(str);
 
 	// send string, read response
 	WriteString(fd,str);
@@ -270,7 +362,7 @@ static int SendCommandNoResponse(int fd, char *command)
 
 	strcpy(str,command);
 	len=strlen(str);
-	AddTermination(str,termination);
+	AddTermination(str);
 
 	if(WriteString(fd,str))
 	{
@@ -322,21 +414,38 @@ void EnterISPMode(int fd, int hold)
 	}
 }
 
-void ExitISPMode(int fd)
+int ResetTarget(int fd)
+// attempt to reset target.  return -1 if reset pin is not mapped,
+// 0 otherwise.
 {
-	ReportString(REPORT_DEBUG_PROCESS,"exiting ISP mode\n");
-
-	// set ISP high, toggle reset low then high
-	SetISP(fd,1);
 	if(resetPin!=PIN_NONE)
 	{
 		SetReset(fd,0);
 		usleep(100000);
 		SetReset(fd,1);
+		return(0);
+	}
+	return(-1);
+}
+
+void ExitISPMode(int fd)
+{
+	char
+		response[256];
+
+	ReportString(REPORT_DEBUG_PROCESS,"exiting ISP mode\n");
+
+	// ensure ISP is high
+	SetISP(fd,1);
+	if(resetPin!=PIN_NONE)
+	{
+		ResetTarget(fd);
 	}
 	else
 	{
-		// @@@ reset is not mapped; use GO command here to try to start program
+		// reset is not mapped; use GO command here to try to start program
+		ReportString(REPORT_DEBUG_PROCESS,"reset not mapped, attempting to jump to 0x00000000\n");
+		SendCommand(fd,"G 0 A",response,"0");
 	}
 }
 
