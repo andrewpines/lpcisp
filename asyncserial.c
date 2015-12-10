@@ -184,7 +184,7 @@ int OpenDevice(char *name)
 		terminalParams.c_iflag&=~(IXON|IXOFF);		// disable XON/XOFF
 		terminalParams.c_cc[VMIN]=MIN_CHARS;		// read returns immediately if no characters
 		terminalParams.c_cc[VTIME]=CHAR_TIMEOUT;
-		cfsetspeed(&terminalParams,GetBaudCode(9600));	// Set default baud (can't fail)
+		cfsetspeed(&terminalParams,GetBaudCode(115200));	// Set default baud (can't fail)
 		if(tcsetattr(fd,TCSANOW,&terminalParams)>=0)
 		{
 			tcflow(fd,TCOON);
