@@ -13,22 +13,22 @@ target processor.  All options are preceded by a dash.  To get the
 current complete list of options invoke the program with no arguments.
 
 Please note:
-        1) on exit the target is reset.  If reset isn't mapped this will do nothing and the
-                user will need to reset the target manually.  The GO command is not yet
-                supported (this is the only case where the GO command really makes sense).
+        1) on exit the target is reset.  If reset isn't mapped the GO command is invoked to
+        	attempt to jump to address 0x00000000.
         2) the set of supported devices is incomplete.  Adding more parts is simply a matter
                 of adding lines to the list.  See partdesc.c.  As this is recently developed
                 this list is incomplete and may be inaccurate.  Please forward changes and
                 additions via:
-                   http://www.cosmodog.com/contact/
+                   https://github.com/andrewpines/lpcisp/issues
 
 Supporting documentation:
         AN11229, UUencoding for UART ISP, Rev. 1 -- 22 June 2012
-        UM10601, LPC800 User Manaual, Rev. 1.3, 22 July 2013
-        UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013
-        UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012
+        UM10211, LPC23xx User manual, Rev. 4.1 -- 5 September 2012
         UM10360, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014
+        UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012
+        UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013
         UM10470, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014
+        UM10601, LPC800 User Manaual, Rev. 1.3, 22 July 2013
 
 ================================================
 
@@ -79,8 +79,8 @@ Following is a list of the available options:
 -write          write the loaded file to flash on the target.
 
 -verify         compare the loaded file with the flash on the target.  Note that this
-                does not require writing the file first though in that case it does
-                require that code read protect is disabled.
+                does not require writing the file first though if it is used without
+                first writing the code it requires that code read protect is disabled.
 
 -dump address length      dump a block of memory from the device.  Address may be anywhere
                 within the device but it must be word-algned (multiple of four).  Length
