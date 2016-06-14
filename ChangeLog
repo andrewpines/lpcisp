@@ -37,11 +37,13 @@
 	    exit on various failures (stop processing, don't drop to terminal mode)
 	    corrected flags for LPC17xx to include uuencode
 	    added support for non-uniform sector sizes
-	0.0.15 -- 10 December, 2015
+	  0.0.15 -- 10 December, 2015
 	    added LPC23xx to the set of supported parts
 	    fixed line termination handling so all parts work correctly (uuencoded and binary transfers both work now)
 	    if reset is not mapped to a pin issue a GO command to address zero instead when exiting ISP mode
 	    skip over vectors (64 bytes) when verifying parts which re-map the vector table in ISP mode
+	  0.0.16 -- 14 June, 2016
+	    cleaned up usage of reset, added 100 ms delay after negating reset on entry to ISP mode before attempting to communicate
 
 	to do:
 		add support for lots more parts

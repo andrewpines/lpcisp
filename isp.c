@@ -447,29 +447,6 @@ void ConfigureISPPin(int state)
 	ispPin=state;
 }
 
-void EnterISPMode(int fd, int hold)
-// enter the ISP mode.  Drive RESET and ISP low, then release RESET.
-// if hold is true then leave ISP asserted on exit.
-{
-	ReportString(REPORT_DEBUG_PROCESS,"entering ISP mode\n");
-
-	// echo is enabled by default, re-enable here since the part is being reset
-	echo=1;
-
-	// set ISP low, toggle reset low then high
-	SetISP(fd,0);
-	SetReset(fd,0);
-	usleep(100000);
-	SetReset(fd,1);
-
-	// if not asked to hold ISP low, set it back high here
-	if(!hold)
-	{
-		usleep(100000);
-		SetISP(fd,1);
-	}
-}
-
 int ResetTarget(int fd)
 // attempt to reset target.  return -1 if reset pin is not mapped,
 // 0 otherwise.
@@ -484,6 +461,29 @@ int ResetTarget(int fd)
 	return(-1);
 }
 
+void EnterISPMode(int fd, int hold)
+// enter the ISP mode.  Drive RESET and ISP low, then release RESET.
+// if hold is true then leave ISP asserted on exit.
+{
+	ReportString(REPORT_DEBUG_PROCESS,"entering ISP mode\n");
+
+	// echo is enabled by default, re-enable here since the part is being reset
+	echo=1;
+
+	// set ISP low, toggle reset if pin is mapped
+	SetISP(fd,0);
+	ResetTarget(fd);
+	
+	// allow target processor to boot
+	usleep(100000);
+
+	// if not asked to hold ISP low, set it back high here
+	if(!hold)
+	{
+		SetISP(fd,1);
+	}
+}
+
 void ExitISPMode(int fd)
 {
 	char
@@ -493,11 +493,7 @@ void ExitISPMode(int fd)
 
 	// ensure ISP is high
 	SetISP(fd,1);
-	if(resetPin!=PIN_NONE)
-	{
-		ResetTarget(fd);
-	}
-	else
+	if(ResetTarget(fd)<0)
 	{
 		// reset is not mapped; use GO command here to try to start program
 		ReportString(REPORT_DEBUG_PROCESS,"reset not mapped, attempting to jump to 0x00000000\n");
@@ -1134,6 +1130,7 @@ int Sync(int fd, int freq,int retries)
 	{
 		// enter ISP mode (drive ISP low, toggle reset low then high, if possible)
 		EnterISPMode(fd,ispHold);
+
 		// send autobaud character ('?')
 		WriteChar(fd,'?');
 		if(ReadString(fd,buffer))
