@@ -44,6 +44,8 @@
 	    skip over vectors (64 bytes) when verifying parts which re-map the vector table in ISP mode
 	  0.0.16 -- 14 June, 2016
 	    cleaned up usage of reset, added 100 ms delay after negating reset on entry to ISP mode before attempting to communicate
+	  0.0.17 -- 22 June, 2016
+	    added support for non-standard baud rates in OSX
 
 	to do:
 		add support for lots more parts
