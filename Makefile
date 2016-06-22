@@ -8,6 +8,14 @@ APP=lpcisp
 
 CFLAGS=-O2 -Wall
 
+ifeq ($(OSTYPE),)
+OSTYPE		= $(shell uname)
+endif
+
+ifneq ($(findstring Darwin,$(OSTYPE)),)
+CFLAGS		+= -D__OSX__
+endif
+
 OBJECTS = \
 	main.o \
 	asyncserial.o \

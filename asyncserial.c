@@ -1,6 +1,11 @@
 
 #include "includes.h"
 
+
+#ifdef __OSX__
+#include <IOKit/serial/ioss.h>
+#endif
+
 #define MIN_CHARS		1		// DEBUG something is amiss with this, if VTIME is non-zero we get EAGAIN returned instead of zero (and no delay)
 #define CHAR_TIMEOUT	0		// character timeout (read fails and returns if this much time passes without a character) in 1/10's sec
 
@@ -159,6 +164,13 @@ int ChangeBaudRate(int fd, int baud)
 	}
 	else
 	{
+#ifdef __OSX__
+		// if OSX, set arbitrary baud rate
+		if(ioctl(fd,IOSSIOSPEED,&baud)>=0)	
+		{
+			return(0);
+		}
+#endif // __OSX__
 		ReportString(REPORT_ERROR,"invalid baud rate: %d\n",baud);
 	}
 	return(-1);
