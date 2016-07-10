@@ -24,6 +24,11 @@ typedef struct
 		idIdx;
 }partinfo_t;
 
+// b0   = 1 if data is uuencoded, 0 if not
+// b2:1 = expected line termination
+// b3   = 1 if device remaps the first 64 bytes (vectors) in ISP mode
+// b4   = 1 if device has a UID, 0 if not
+ 
 #define UUENCODE	(1<<0)	// set if part expects data to be uuencoded and checksummed
 #define TERM_ANY	(0<<1)	// default, no flags set
 #define TERM_CR		(1<<1)
@@ -31,6 +36,7 @@ typedef struct
 #define TERM_CRLF	(3<<1)
 #define TERM_MASK	(3<<1)
 #define VECT_REMAP	(1<<3)	// set true if device remaps the first 64 bytes (vectors) in ISP mode, thus making that section un-verifiable
+#define HAS_UID		(1<<4)	// device has a UID, supports UID command
 
 void ReportPartInfo(int level,partinfo_t *p);
 int GetPartInfo(int fd,partinfo_t *p);

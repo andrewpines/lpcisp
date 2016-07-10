@@ -46,6 +46,8 @@
 	    cleaned up usage of reset, added 100 ms delay after negating reset on entry to ISP mode before attempting to communicate
 	  0.0.17 -- 22 June, 2016
 	    added support for non-standard baud rates in OSX
+	  0.0.18 -- 10 July 2016
+	    added flag for HAS_UID, skip trying to read or report UID on parts which don't support it (need to fully update partDef[])
 
 	to do:
 		add support for lots more parts

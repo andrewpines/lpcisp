@@ -117,12 +117,12 @@ const partinfo_t
 		// the following are from UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012.
 		//																									# of										block	block RAM
 		//		id			alt. ID			name															sectors							ram			size	address
-		{	{0x2C42502B,	~0			},	"LPC1311FHN33",													2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{0x1816902B,	~0			},	"LPC1311FHN33/01",												2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{0x2C40102B,	~0			},	"LPC1313F[HN33|BD48]",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{0x1830102B,	~0			},	"LPC1313F[HN33|BD48]/01",										8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{0x3D01402B,	~0			},	"LPC1342F[HN33|BD48]",											4,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{0x3D00002B,	~0			},	"LPC1343F[HN33|BD48]",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{0x2C42502B,	~0			},	"LPC1311FHN33",													2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1816902B,	~0			},	"LPC1311FHN33/01",												2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x2C40102B,	~0			},	"LPC1313F[HN33|BD48]",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1830102B,	~0			},	"LPC1313F[HN33|BD48]/01",										8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x3D01402B,	~0			},	"LPC1342F[HN33|BD48]",											4,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x3D00002B,	~0			},	"LPC1343F[HN33|BD48]",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
 
 		// the following are from UM10360, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014.
 		//																									# of										block	block RAM
@@ -233,12 +233,16 @@ void ReportPartInfo(int level,partinfo_t *p)
 		ReportString(level,"   ID:           0x%08x\n",p->id[p->idIdx]);
 		ReportString(level,"   flash size:   %d bytes\n",GetFlashSize(p));
 		ReportString(level,"   SRAM size:    %d bytes\n",p->ramSize);
-		ReportString(level,"   UID:          ");
-		for(i=0;i<4;i++)
+		if(p->flags&HAS_UID)
 		{
-			ReportString(level,"%08x ",p->uid[i]);
+			// if device has a UID report it
+			ReportString(level,"   UID:          ");
+			for(i=0;i<4;i++)
+			{
+				ReportString(level,"%08x ",p->uid[i]);
+			}
+			ReportString(level,"\n");
 		}
-		ReportString(level,"\n");
 		ReportString(level,"   boot version: %d.%d\n",p->bootMajor,p->bootMinor);
 	}
 }
@@ -273,7 +277,11 @@ int GetPartInfo(int fd,partinfo_t *p)
 				}
 			}
 		}
-		ReadPartUID(fd,p->uid);
+		if(found&&(p->flags&HAS_UID))
+		{
+			// if device identified and it supports UID
+			ReadPartUID(fd,p->uid);
+		}
 		ReadBootCode(fd,&p->bootMajor,&p->bootMinor);
 		return(0);
 	}

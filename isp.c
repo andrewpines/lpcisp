@@ -720,7 +720,8 @@ unsigned int ReadPartID(int fd)
 }
 
 int ReadPartUID(int fd, unsigned int *uid)
-// read and return 0 on success or -1 on error.  uid must point to an array of four 32-bits each
+// read and return 0 on success or -1 on error.  uid must point to an array of four 32-bits each.
+// not all parts have a UID; will return -1 if unsupported.
 {
 	char
 		buffer[256];
