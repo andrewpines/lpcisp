@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.19";
+	*version="0.0.20";
 
 static int
 	fd,

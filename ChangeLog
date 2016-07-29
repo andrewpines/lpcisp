@@ -52,6 +52,9 @@
 	    added support for LPC18xx parts.  these parts may have multiple flash banks and have two word IDs so the part description
 	    table was extended to add parameters to support the differences.  the low level functions now have the ability to write to 
 	    arbitrary banks but for now only bank 0 (A) is supported.
+	  0.0.20 -- 29 July, 2016
+	    improved hex file handling to work properly with files which don't start at address zero
+	    expanded sector map in part description to include bank and base address in addition to size (banks still not fully supported)
 
 	to do:
 		add support for lots more parts

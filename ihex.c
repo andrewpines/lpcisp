@@ -27,10 +27,13 @@ static int ASCII2HexByte(char hi, char lo)
 	return(((i>=0)&&(j>=0))?(i*0x10+j):-1);
 }
 
-static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *address, int *length,int *size)
+static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *baseAddr, int *extAddr, int *length, int *size, int *eof)
 // parse an Intel hex record, put the contents into the buffer.
 //  buffer: pointer to the buffer
 //  line: pointer to the line containing the hex record
+//  baseAddr: pointer to address of first byte in buffer (lowest address in file)
+//  extAddr: pointer to current linear base address (b31:16 only; b15:0 are zero)
+//  length: pointer to size of the image in the buffer
 //  size: pointer to the size of the buffer (may be resized)
 //  return pointer to buffer on success, NULL on any error (free buffer on error)
 //
@@ -45,8 +48,9 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *addres
 		idx,
 		checksum,
 		reclen;
-	unsigned short
-		offset;
+	unsigned int
+		recAddr,	// base address of this record
+		endOffset;
 	int
 		fail;
 	unsigned char
@@ -60,24 +64,48 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *addres
 	{
 		// read the parameters common to all records
 		reclen=ASCII2HexByte(line[1],line[2]);
-		offset=(ASCII2HexByte(line[3],line[4])<<8)|ASCII2HexByte(line[5],line[6]);
+		recAddr=*extAddr|(ASCII2HexByte(line[3],line[4])<<8)|ASCII2HexByte(line[5],line[6]);
 		type=ASCII2HexByte(line[7],line[8]);
 
-		// test the record's checksum, regardless of the record type
+		// test the record's checksum regardless of the record type
 		checksum=0;
 		for(idx=0;idx<(reclen+5);idx++)	// length of area to be checksummed (data plus reclen plus offset plus type plus checksum)
 		{
 			checksum+=ASCII2HexByte(line[idx*2+1],line[idx*2+2]);
 		}
+
 		if(checksum==0)
 		{
 			switch(type)
 			{
-				case 0:
-					if(offset+reclen>*size)
+				case 0:	// data record
+					if(*baseAddr<0)
+					{
+						// if base address hasn't been assigned yet then use this first record's address as the base of the buffer
+						*baseAddr=recAddr;
+					}
+					if(recAddr<*baseAddr)
+					{
+						// this record is lower than the base, allocate space for it and adjust the base
+						oldSize=*size;
+						*size+=*baseAddr-recAddr;
+						p=(unsigned char *)realloc(buffer,*size);
+						if(p)
+						{
+							// move existing data to end of buffer, clear new space at front to 0xff (erased flash)
+							memmove(&p[*baseAddr-recAddr],p,oldSize);
+							memset(&p,0xff,*baseAddr-recAddr);
+						}
+						else
+						{
+							fail=1;
+						}
+					}
+					endOffset=recAddr+reclen-*baseAddr;
+					if(endOffset>*size)
 					{
 						oldSize=*size;
-						*size=((offset+reclen)/1024+1)*1024;
+						*size=(endOffset/1024+1)*1024;
 						p=(unsigned char *)realloc(buffer,*size);	// increase buffer size, round up to next 1k
 						if(p)
 						{
@@ -94,25 +122,27 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *addres
 					{
 						for(idx=0;idx<reclen;idx++)
 						{
-							buffer[offset+idx]=ASCII2HexByte(line[9+idx*2],line[10+idx*2]);
+							buffer[recAddr+idx-*baseAddr]=ASCII2HexByte(line[9+idx*2],line[10+idx*2]);
 						}
-						*address=offset;
-						*length=reclen;
+						if(endOffset>*length)
+						{
+							*length=endOffset;
+						}
 					}
 					break;
 				case 1:	// EOF record
-	//				printf("EOF\n");
+					*eof=1;
 					break;
 				case 3: // start segment address
-	//				printf("start segment address: 0x%04x\n",
-	//					(ASCII2HexByte(line[9],line[10])<<24)|
-	//					(ASCII2HexByte(line[11],line[12])<<16)|
-	//					(ASCII2HexByte(line[13],line[14])<<8)|
-	//					(ASCII2HexByte(line[15],line[16])<<0));
+					// @@@ ignore
+					break;
+				case 4: // extended linear address
+					*extAddr=(ASCII2HexByte(line[9],line[10])<<24)|(ASCII2HexByte(line[11],line[12])<<16);
+					break;
+				case 5: // start linear address
+					printf("start linear address: 0x%08x\n",(ASCII2HexByte(line[9],line[10])<<24)|(ASCII2HexByte(line[11],line[12])<<16));
 					break;
 				case 2: // exteneded segment address
-				case 4: // extended linear address
-				case 5: // start linear address
 				default:
 					// don't know how to handle this type of record, fall through and return -1
 					ReportString(REPORT_ERROR,"unknown record type \"%02x\"\n",type);
@@ -139,11 +169,11 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *addres
 	return(buffer);
 }
 
-unsigned char *ReadHexFile(const char *fileName,int *start,int *length)
+unsigned char *ReadHexFile(const char *fileName,int *baseAddr,int *length)
 // read hex file into buffer, return pointer to buffer or NULL if error.
 // caller must free returned buffer.
 //   fileName: name of hex file to load
-//   start: pointer to start address (to be filled in)
+//   start: pointer to start address (to be filled in) -- this is the address of the first byte of the buffer (offset)
 //   length: pointer to length of image (to be filled in)
 {
 	FILE
@@ -156,16 +186,15 @@ unsigned char *ReadHexFile(const char *fileName,int *start,int *length)
 		*line;
 	int
 		size,
-		address,
-		reclen;
+		extAddr;
+	int
+		eof;
 
-	*start=-1;
-	*length=-1;
-	size=1024;
 	buffer=(unsigned char *)NULL;
 	fp=fopen(fileName,"r");
 	if(fp)
 	{
+		size=1024;
 		if((buffer=(unsigned char *)malloc(size)))
 		{
 			memset(buffer,0xff,size);
@@ -173,9 +202,11 @@ unsigned char *ReadHexFile(const char *fileName,int *start,int *length)
 			line=(char *)malloc(n);
 			if(line)
 			{
-				address=-1;
-				reclen=-1;
-				while(buffer && (getline(&line,&n,fp)>0))
+				extAddr=0;
+				*baseAddr=-1;
+				*length=0;
+				eof=0;
+				while(!eof && buffer && (getline(&line,&n,fp)>0))
 				{
 					// place the contents of the line into the buffer
 					// on success address and reclen are filled with the
@@ -183,20 +214,8 @@ unsigned char *ReadHexFile(const char *fileName,int *start,int *length)
 					// pointer to (possibly resized) buffer or NULL if
 					// error (buffer will have been freed, so no need to
 					// deal with that here).
-					buffer=ParseRecord(buffer,line,&address,&reclen,&size);
-					if(buffer)
-					{
-						if(*start<0 || (address<*start))
-						{
-							*start=address;
-//							printf("start address: 0x%04x\n",*start);
-						}
-						if(address+reclen>*start+*length)
-						{
-							*length=address+reclen-*start;
-						}
-					}
-					else
+					buffer=ParseRecord(buffer,line,baseAddr,&extAddr,length,&size,&eof);
+					if(!buffer)
 					{
 						ReportString(REPORT_ERROR,"failed to parse \"%s\"\n",fileName);
 						errno=EINVAL;
@@ -206,6 +225,9 @@ unsigned char *ReadHexFile(const char *fileName,int *start,int *length)
 			}
 		}
 		fclose(fp);
+printf("base address: 0x%08x\n",*baseAddr);
+printf("image length: 0x%08x\n",*length);
+printf("buffer size: 0x%08x\n",size);
 	}
 	else
 	{

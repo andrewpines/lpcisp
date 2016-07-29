@@ -32,41 +32,243 @@
 //    https://github.com/andrewpines/lpcisp/issues
 
 
-static const int
+static const sectormap_t
 	sectorMap1k[]=
 	{
 		// 1kB uniform sector map
-		1024,1024,1024,1024,1024,1024,1024,1024,
-		1024,1024,1024,1024,1024,1024,1024,1024,
+		//	bank	base		size
+		{	0,		0x00000000,	0x400,	},
+		{	0,		0x00000400,	0x400,	},
+		{	0,		0x00000800,	0x400,	},
+		{	0,		0x00000c00,	0x400,	},
+		{	0,		0x00001000,	0x400,	},
+		{	0,		0x00001400,	0x400,	},
+		{	0,		0x00001800,	0x400,	},
+		{	0,		0x00001c00,	0x400,	},
+		{	0,		0x00002000,	0x400,	},
+		{	0,		0x00002400,	0x400,	},
+		{	0,		0x00002800,	0x400,	},
+		{	0,		0x00002c00,	0x400,	},
+		{	0,		0x00003000,	0x400,	},
+		{	0,		0x00003400,	0x400,	},
+		{	0,		0x00003800,	0x400,	},
+		{	0,		0x00003c00,	0x400,	},
 	},
 	sectorMap4k[]=
 	{
 		// 4kB uniform sector map
-		4096,4096,4096,4096,4096,4096,4096,4096,
-		4096,4096,4096,4096,4096,4096,4096,4096,
+		//	bank	base		size
+		{	0,		0x00000000,	0x1000,	},
+		{	0,		0x00001000,	0x1000,	},
+		{	0,		0x00002000,	0x1000,	},
+		{	0,		0x00003000,	0x1000,	},
+		{	0,		0x00004000,	0x1000,	},
+		{	0,		0x00005000,	0x1000,	},
+		{	0,		0x00006000,	0x1000,	},
+		{	0,		0x00007000,	0x1000,	},
+		{	0,		0x00008000,	0x1000,	},
+		{	0,		0x00009000,	0x1000,	},
+		{	0,		0x0000a000,	0x1000,	},
+		{	0,		0x0000b000,	0x1000,	},
+		{	0,		0x0000c000,	0x1000,	},
+		{	0,		0x0000d000,	0x1000,	},
+		{	0,		0x0000e000,	0x1000,	},
+		{	0,		0x0000f000,	0x1000,	},
 	},
 	sectorMapLpc17xx[]=
 	{
 		// LPC17xx non-uniform sector map
-		4096,4096,4096,4096,4096,4096,4096,4096,
-		4096,4096,4096,4096,4096,4096,4096,4096,
-		32768,32768,32768,32768,32768,32768,32768,32768,
-		32768,32768,32768,32768,32768,32768,32768,32768,
+		{	0,		0x00000000,	0x1000,	},
+		{	0,		0x00001000,	0x1000,	},
+		{	0,		0x00002000,	0x1000,	},
+		{	0,		0x00003000,	0x1000,	},
+		{	0,		0x00004000,	0x1000,	},
+		{	0,		0x00005000,	0x1000,	},
+		{	0,		0x00006000,	0x1000,	},
+		{	0,		0x00007000,	0x1000,	},
+		{	0,		0x00008000,	0x1000,	},
+		{	0,		0x00009000,	0x1000,	},
+		{	0,		0x0000a000,	0x1000,	},
+		{	0,		0x0000b000,	0x1000,	},
+		{	0,		0x0000c000,	0x1000,	},
+		{	0,		0x0000d000,	0x1000,	},
+		{	0,		0x0000e000,	0x1000,	},
+		{	0,		0x0000f000,	0x1000,	},
+		{	0,		0x00010000,	0x8000,	},
+		{	0,		0x00018000,	0x8000,	},
+		{	0,		0x00020000,	0x8000,	},
+		{	0,		0x00028000,	0x8000,	},
+		{	0,		0x00030000,	0x8000,	},
+		{	0,		0x00038000,	0x8000,	},
+		{	0,		0x00040000,	0x8000,	},
+		{	0,		0x00048000,	0x8000,	},
+		{	0,		0x00050000,	0x8000,	},
+		{	0,		0x00058000,	0x8000,	},
+		{	0,		0x00060000,	0x8000,	},
+		{	0,		0x00068000,	0x8000,	},
+		{	0,		0x00070000,	0x8000,	},
+		{	0,		0x00078000,	0x8000,	},
+		{	0,		0x00080000,	0x8000,	},
+		{	0,		0x00088000,	0x8000,	},
 	},
-	sectorMapLpc18xx[]=
+	sectorMapLpc18x2[]=
 	{
-		// LPC18x2 non-uniform sector map
-		8192,8192,8192,8192,8192,8192,8192,8192,			// 0-7 are 8kB
-		65536,65536,65536,65536,65536,65536,65536,			// 8-14 are 64kB
-		// @@@ some of these devices have an alternate flash bank which is not yet supported here
+		// LPC18xx non-uniform sector map
+		{	0,		0x1a000000,	0x02000,	},		// 0-7 are 8kB
+		{	0,		0x1a002000,	0x02000,	},
+		{	0,		0x1a004000,	0x02000,	},
+		{	0,		0x1a006000,	0x02000,	},
+		{	0,		0x1a008000,	0x02000,	},
+		{	0,		0x1a00a000,	0x02000,	},
+		{	0,		0x1a00c000,	0x02000,	},
+		{	0,		0x1a00e000,	0x02000,	},
+
+		{	0,		0x1a010000,	0x10000,	},		// 8-14 are 64kB
+		{	0,		0x1a020000,	0x10000,	},
+		{	0,		0x1a030000,	0x10000,	},
+		{	0,		0x1a040000,	0x10000,	},
+		{	0,		0x1a050000,	0x10000,	},
+		{	0,		0x1a060000,	0x10000,	},
+		{	0,		0x1a070000,	0x10000,	},
+	},
+	sectorMapLpc18x3[]=
+	{
+		// LPC18xx non-uniform sector map
+		// bank A
+		{	0,		0x1a000000,	0x02000,	},		// 0-7 are 8kB
+		{	0,		0x1a002000,	0x02000,	},
+		{	0,		0x1a004000,	0x02000,	},
+		{	0,		0x1a006000,	0x02000,	},
+		{	0,		0x1a008000,	0x02000,	},
+		{	0,		0x1a00a000,	0x02000,	},
+		{	0,		0x1a00c000,	0x02000,	},
+		{	0,		0x1a00e000,	0x02000,	},
+
+		{	0,		0x1a010000,	0x10000,	},		// 8-10 are 64kB
+		{	0,		0x1a020000,	0x10000,	},
+		{	0,		0x1a030000,	0x10000,	},
+
+		// bank B
+		{	1,		0x1b000000,	0x02000,	},		// 0-7 are 8kB
+		{	1,		0x1b002000,	0x02000,	},
+		{	1,		0x1b004000,	0x02000,	},
+		{	1,		0x1b006000,	0x02000,	},
+		{	1,		0x1b008000,	0x02000,	},
+		{	1,		0x1b00a000,	0x02000,	},
+		{	1,		0x1b00c000,	0x02000,	},
+		{	1,		0x1b00e000,	0x02000,	},
+
+		{	1,		0x1b010000,	0x10000,	},		// 8-10 are 64kB
+		{	1,		0x1b020000,	0x10000,	},
+		{	1,		0x1b030000,	0x10000,	},
+	},
+	sectorMapLpc18x5[]=
+	{
+		// LPC18xx non-uniform sector map
+		// bank A
+		{	0,		0x1a000000,	0x02000,	},		// 0-7 are 8kB
+		{	0,		0x1a002000,	0x02000,	},
+		{	0,		0x1a004000,	0x02000,	},
+		{	0,		0x1a006000,	0x02000,	},
+		{	0,		0x1a008000,	0x02000,	},
+		{	0,		0x1a00a000,	0x02000,	},
+		{	0,		0x1a00c000,	0x02000,	},
+		{	0,		0x1a00e000,	0x02000,	},
+
+		{	0,		0x1a010000,	0x10000,	},		// 8-12 are 64kB
+		{	0,		0x1a020000,	0x10000,	},
+		{	0,		0x1a030000,	0x10000,	},
+		{	0,		0x1a040000,	0x10000,	},
+		{	0,		0x1a050000,	0x10000,	},
+
+		// bank B
+		{	1,		0x1b000000,	0x02000,	},		// 0-7 are 8kB
+		{	1,		0x1b002000,	0x02000,	},
+		{	1,		0x1b004000,	0x02000,	},
+		{	1,		0x1b006000,	0x02000,	},
+		{	1,		0x1b008000,	0x02000,	},
+		{	1,		0x1b00a000,	0x02000,	},
+		{	1,		0x1b00c000,	0x02000,	},
+		{	1,		0x1b00e000,	0x02000,	},
+
+		{	1,		0x1b010000,	0x10000,	},		// 8-12 are 64kB
+		{	1,		0x1b020000,	0x10000,	},
+		{	1,		0x1b030000,	0x10000,	},
+		{	0,		0x1b040000,	0x10000,	},
+		{	0,		0x1b050000,	0x10000,	},
+	},
+	sectorMapLpc18x7[]=
+	{
+		// LPC18xx non-uniform sector map
+		// bank A
+		{	0,		0x1a000000,	0x02000,	},		// 0-7 are 8kB
+		{	0,		0x1a002000,	0x02000,	},
+		{	0,		0x1a004000,	0x02000,	},
+		{	0,		0x1a006000,	0x02000,	},
+		{	0,		0x1a008000,	0x02000,	},
+		{	0,		0x1a00a000,	0x02000,	},
+		{	0,		0x1a00c000,	0x02000,	},
+		{	0,		0x1a00e000,	0x02000,	},
+
+		{	0,		0x1a010000,	0x10000,	},		// 8-14 are 64kB
+		{	0,		0x1a020000,	0x10000,	},
+		{	0,		0x1a030000,	0x10000,	},
+		{	0,		0x1a040000,	0x10000,	},
+		{	0,		0x1a050000,	0x10000,	},
+		{	0,		0x1a060000,	0x10000,	},
+		{	0,		0x1a070000,	0x10000,	},
+
+		// bank B
+		{	1,		0x1b000000,	0x02000,	},		// 0-7 are 8kB
+		{	1,		0x1b002000,	0x02000,	},
+		{	1,		0x1b004000,	0x02000,	},
+		{	1,		0x1b006000,	0x02000,	},
+		{	1,		0x1b008000,	0x02000,	},
+		{	1,		0x1b00a000,	0x02000,	},
+		{	1,		0x1b00c000,	0x02000,	},
+		{	1,		0x1b00e000,	0x02000,	},
+
+		{	1,		0x1b010000,	0x10000,	},		// 8-14 are 64kB
+		{	1,		0x1b020000,	0x10000,	},
+		{	1,		0x1b030000,	0x10000,	},
+		{	1,		0x1b040000,	0x10000,	},
+		{	1,		0x1b050000,	0x10000,	},
+		{	1,		0x1b060000,	0x10000,	},
+		{	1,		0x1b070000,	0x10000,	},
 	},
 	sectorMapLpc23xx[]=
 	{
 		// LPC23xx non-uniform sector map
-		4096,4096,4096,4096,4096,4096,4096,4096,			// 0-7 are 4kB
-		32768,32768,32768,32768,32768,32768,32768,32768,	// 8-21 are 32kB
-		32768,32768,32768,32768,32768,32768,
-		4096,4096,4096,4096,4096,4096,						// 22-27 are 4kB
+		{	0,		0x00000000,	0x01000,	},		// 0-7 are 4kB
+		{	0,		0x00001000,	0x01000,	},
+		{	0,		0x00002000,	0x01000,	},
+		{	0,		0x00003000,	0x01000,	},
+		{	0,		0x00004000,	0x01000,	},
+		{	0,		0x00005000,	0x01000,	},
+		{	0,		0x00006000,	0x01000,	},
+		{	0,		0x00007000,	0x01000,	},
+
+		{	0,		0x00008000,	0x08000,	},		// 8-21 are 32kB
+		{	0,		0x00010000,	0x08000,	},
+		{	0,		0x00018000,	0x08000,	},
+		{	0,		0x00020000,	0x08000,	},
+		{	0,		0x00028000,	0x08000,	},
+		{	0,		0x00030000,	0x08000,	},
+		{	0,		0x00038000,	0x08000,	},
+		{	0,		0x00040000,	0x08000,	},
+		{	0,		0x00048000,	0x08000,	},
+		{	0,		0x00050000,	0x08000,	},
+		{	0,		0x00058000,	0x08000,	},
+		{	0,		0x00060000,	0x08000,	},
+		{	0,		0x00068000,	0x08000,	},
+		{	0,		0x00070000,	0x08000,	},
+
+		{	0,		0x00078000,	0x01000,	},		// 22-27 are 4kB
+		{	0,		0x00079000,	0x01000,	},		
+		{	0,		0x0007a000,	0x01000,	},		
+		{	0,		0x0007b000,	0x01000,	},		
+		{	0,		0x0007c000,	0x01000,	},		
+		{	0,		0x0007d000,	0x01000,	},		
 	};
 
 const partinfo_t
@@ -167,35 +369,35 @@ const partinfo_t
 		// the following are from UM10430, LPC18xx User manual, Rev. 2.8 -- 10 December 2015
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID			word1	name														sectors							banks	main ram	size	address
-		{	{0xf000d830,	~0			},	0x00,	"LPC1850FET[180|256]",										0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf000d860,	~0			},	0x00,	"LPC18S50FET[180|256]",										0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf000da30,	~0			},	0x00,	"LPC1830[[FET[100|180|256]|FBD144]",						0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf000da60,	~0			},	0x00,	"LPC18S30[[FET[100|256]|FBD144]",							0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00adb3c,	~0			},	0x00,	"LPC1820[FET100|FBD[100|144]]",								0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00adb6c,	~0			},	0x00,	"LPC18S20FBD144",											0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00b5b3f,	~0			},	0x00,	"LPC1810[FET100|FBD144]",									0,			sectorMapLpc18xx,	0,		64*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00b5b6f,	~0			},	0x00,	"LPC18S10[FET[100|180]|FBD144]",							0,			sectorMapLpc18xx,	0,		64*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001d830,	~0			},	0x00,	"LPC1857[FET[180|256]|FBD208]",								15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001d860,	~0			},	0x00,	"LPC18S57JBD208",											15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001d830,	~0			},	0x44,	"LPC1853[FET[180|256]|FBD208]",								11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001da30,	~0			},	0x00,	"LPC1837FET[[100|180|256]FBD144]",							15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001da60,	~0			},	0x00,	"LPC18S37[JET100|JBD144]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001da30,	~0			},	0x44,	"LPC1833FET[[100|180|256]FBD144]",							11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001db3c,	~0			},	0x00,	"LPC1827[JBD144|JET100]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001db3c,	~0			},	0x22,	"LPC1823[JBD144|JET100]",									11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00bdb3c,	~0			},	0x44,	"LPC1823[JBD144|JET100]",									11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00bdb3c,	~0			},	0x80,	"LPC1822[JBD144|JET100]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001db3f,	~0			},	0x00,	"LPC1817[JBD144|JET100]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf001db3f,	~0			},	0x22,	"LPC1815[JBD144|JET100]",									13,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00bdb3f,	~0			},	0x44,	"LPC1813[JBD144|JET100]",									11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
-		{	{0xf00bdb3f,	~0			},	0x80,	"LPC1812[JBD144|JET100]",									15,			sectorMapLpc18xx,	1,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf000d830,	~0			},	0x00,	"LPC1850FET[180|256]",										0,		(sectormap_t *)NULL,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf000d860,	~0			},	0x00,	"LPC18S50FET[180|256]",										0,		(sectormap_t *)NULL,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf000da30,	~0			},	0x00,	"LPC1830[[FET[100|180|256]|FBD144]",						0,		(sectormap_t *)NULL,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf000da60,	~0			},	0x00,	"LPC18S30[[FET[100|256]|FBD144]",							0,		(sectormap_t *)NULL,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00adb3c,	~0			},	0x00,	"LPC1820[FET100|FBD[100|144]]",								0,		(sectormap_t *)NULL,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00adb6c,	~0			},	0x00,	"LPC18S20FBD144",											0,		(sectormap_t *)NULL,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00b5b3f,	~0			},	0x00,	"LPC1810[FET100|FBD144]",									0,		(sectormap_t *)NULL,	0,		64*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00b5b6f,	~0			},	0x00,	"LPC18S10[FET[100|180]|FBD144]",							0,		(sectormap_t *)NULL,	0,		64*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001d830,	~0			},	0x00,	"LPC1857[FET[180|256]|FBD208]",								15,			sectorMapLpc18x7,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001d860,	~0			},	0x00,	"LPC18S57JBD208",											15,			sectorMapLpc18x7,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001d830,	~0			},	0x44,	"LPC1853[FET[180|256]|FBD208]",								11,			sectorMapLpc18x3,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001da30,	~0			},	0x00,	"LPC1837FET[[100|180|256]FBD144]",							15,			sectorMapLpc18x7,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001da60,	~0			},	0x00,	"LPC18S37[JET100|JBD144]",									15,			sectorMapLpc18x7,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001da30,	~0			},	0x44,	"LPC1833FET[[100|180|256]FBD144]",							11,			sectorMapLpc18x3,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3c,	~0			},	0x00,	"LPC1827[JBD144|JET100]",									15,			sectorMapLpc18x7,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3c,	~0			},	0x22,	"LPC1823[JBD144|JET100]",									11,			sectorMapLpc18x3,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3c,	~0			},	0x44,	"LPC1823[JBD144|JET100]",									11,			sectorMapLpc18x3,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3c,	~0			},	0x80,	"LPC1822[JBD144|JET100]",									15,			sectorMapLpc18x2,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3f,	~0			},	0x00,	"LPC1817[JBD144|JET100]",									15,			sectorMapLpc18x7,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3f,	~0			},	0x22,	"LPC1815[JBD144|JET100]",									13,			sectorMapLpc18x5,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3f,	~0			},	0x44,	"LPC1813[JBD144|JET100]",									11,			sectorMapLpc18x3,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3f,	~0			},	0x80,	"LPC1812[JBD144|JET100]",									15,			sectorMapLpc18x2,	1,		32*1024,	1024,	0x10000200,	UUENCODE			},
 	},
 	partDefUnknown=
 	{
 		.id				= {0,0},
 		.name			= "unknown",
 		.numSectors		= 0,
-		.sectorSizeMap	= (int *)NULL,
+		.sectorMap		= (sectormap_t *)NULL,
 		.ramSize		= 0,
 	};
 
@@ -217,16 +419,15 @@ int GetSectorAddr(unsigned int addr, partinfo_t *p)
 // or sector map undefined.
 {
 	int
-		curAddr,
 		sectorNum;
 	
-	if(p->sectorSizeMap)
+printf("find address 0x%08x\n",addr);
+	if(p->sectorMap)
 	{
-		curAddr=0;
 		for(sectorNum=0;sectorNum<p->numSectors;sectorNum++)
 		{
-			curAddr+=p->sectorSizeMap[sectorNum];
-			if(addr<curAddr)
+printf("%d: 0x%08x through 0x%08x\n",sectorNum,p->sectorMap[sectorNum].base,p->sectorMap[sectorNum].base+p->sectorMap[sectorNum].size-1);
+			if((p->sectorMap[sectorNum].base<=addr)&&((p->sectorMap[sectorNum].base+p->sectorMap[sectorNum].size)>addr))
 			{
 				return(sectorNum);
 			}
@@ -236,7 +437,7 @@ int GetSectorAddr(unsigned int addr, partinfo_t *p)
 }
 
 static unsigned int GetFlashSize(partinfo_t *p)
-// return size of flash (add up size of all sectors, multiple by number of banks) or zero
+// return size of flash (add up size of all sectors) or zero
 // if sector size map is undefined.
 {
 	unsigned int
@@ -244,14 +445,14 @@ static unsigned int GetFlashSize(partinfo_t *p)
 		size;
 	
 	size=0;
-	if(p->sectorSizeMap)
+	if(p->sectorMap)
 	{
 		for(i=0;i<p->numSectors;i++)
 		{
-			size+=p->sectorSizeMap[i];
+			size+=p->sectorMap[i].size;
 		}
 	}
-	return(size*p->numBanks);
+	return(size);
 }
 
 void ReportPartInfo(int level,partinfo_t *p)

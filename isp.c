@@ -1072,7 +1072,7 @@ int WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int lengt
 		bytesToWrite;
 	int
 		fail;
-	unsigned int
+	int
 		curSector;
 	unsigned char
 		*buffer;	// use a secondary buffer so we can fill the tail of short writes with 0xff
@@ -1093,27 +1093,35 @@ int WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int lengt
 				ReportString(REPORT_DEBUG_PROCESS,"copied %d bytes into RAM for 0x%08x\n",bytesToWrite,addr);
 				// prepare the sector for writing
 				curSector=GetSectorAddr(addr,partInfo);	// get number of the sector containing address of this block
-				if(PrepareSectorsForWrite(fd,curSector,curSector,0,partInfo))	// @@@ only support bank 0 for now
+				if(curSector>=0)
 				{
-					// write to flash
-					if(CopyRAMtoFlash(fd,partInfo->flashBlockRAMBase,addr,partInfo->flashBlockSize))
+					if(PrepareSectorsForWrite(fd,curSector,curSector,0,partInfo))	// @@@ only support bank 0 for now
 					{
-						// prepare for next
-						length-=bytesToWrite;
-						data+=bytesToWrite;
-						addr+=bytesToWrite;
-						ReportString(REPORT_INFO,"\b\b\b\b\b\b\b\b%08x",addr);
+						// write to flash
+						if(CopyRAMtoFlash(fd,partInfo->flashBlockRAMBase,addr,partInfo->flashBlockSize))
+						{
+							// prepare for next
+							length-=bytesToWrite;
+							data+=bytesToWrite;
+							addr+=bytesToWrite;
+							ReportString(REPORT_INFO,"\b\b\b\b\b\b\b\b%08x",addr);
+						}
+						else
+						{
+							ReportString(REPORT_ERROR,"failed to write %d bytes from 0x%08x to 0x%08x\n",bytesToWrite,partInfo->flashBlockRAMBase,addr);
+							fail=1;
+						}
+
 					}
 					else
 					{
-						ReportString(REPORT_ERROR,"failed to write %d bytes from 0x%08x to 0x%08x\n",bytesToWrite,partInfo->flashBlockRAMBase,addr);
+						ReportString(REPORT_ERROR,"failed to prepare to write to sector %d\n",curSector);
 						fail=1;
 					}
-
 				}
 				else
 				{
-					ReportString(REPORT_ERROR,"failed to prepare to write to sector %d\n",curSector);
+					ReportString(REPORT_ERROR,"failed to find a sector which contains address 0x%08x\n",addr);
 					fail=1;
 				}
 			}

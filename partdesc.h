@@ -1,6 +1,14 @@
 
 typedef struct
 {
+	unsigned int
+		bank,		// bank number
+		base,		// base address
+		size;		// size in bytes
+}sectormap_t;
+
+typedef struct
+{
 	// these are definitions which are set by the part table in partdesc.c
 	unsigned int
 		id[2],				// some parts have more than one ID.  set the second to ~0 if unused.
@@ -8,8 +16,10 @@ typedef struct
 	const char
 		*name;
 	const int
-		numSectors,
-		*sectorSizeMap,
+		numSectors;
+	const sectormap_t
+		*sectorMap;
+	const int
 		numBanks,
 		ramSize,
 		flashBlockSize,		// number of bytes to write at once.  depends on available RAM.
