@@ -53,6 +53,13 @@ static const int
 		32768,32768,32768,32768,32768,32768,32768,32768,
 		32768,32768,32768,32768,32768,32768,32768,32768,
 	},
+	sectorMapLpc18xx[]=
+	{
+		// LPC18x2 non-uniform sector map
+		8192,8192,8192,8192,8192,8192,8192,8192,			// 0-7 are 8kB
+		65536,65536,65536,65536,65536,65536,65536,			// 8-14 are 64kB
+		// @@@ some of these devices have an alternate flash bank which is not yet supported here
+	},
 	sectorMapLpc23xx[]=
 	{
 		// LPC23xx non-uniform sector map
@@ -66,96 +73,122 @@ const partinfo_t
 	partDef[]=
 	{
 		// the following are from UM10601, LPC800 User manual, Rev. 1.3, 22 July 2013.
-		//																									# of										block	block RAM
-		//		id			alt. ID			name															sectors							ram			size	address		flags
-		{	{ 0x00008100,	~0			},	"LPC810M021FN8",												4,			sectorMap1k,		1024,		256,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008110,	~0			},	"LPC811M001JDH16",												8,			sectorMap1k,		2048,		1024,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008120,	~0			},	"LPC812M101JDH16",												16,			sectorMap1k,		4096,		1024,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008121,	~0			},	"LPC812M101JD20",												16,			sectorMap1k,		4096,		1024,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008122,	~0			},	"LPC812M101JDH20",												16,			sectorMap1k,		4096,		1024,	0x10000300,	TERM_CRLF	},
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name															sectors							banks	ram			size	address		flags
+		{	{ 0x00008100,	~0			},	~0,	"LPC810M021FN8",												4,			sectorMap1k,		1,		1024,		256,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008110,	~0			},	~0,	"LPC811M001JDH16",												8,			sectorMap1k,		1,		2048,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008120,	~0			},	~0,	"LPC812M101JDH16",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008121,	~0			},	~0,	"LPC812M101JD20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008122,	~0			},	~0,	"LPC812M101JDH20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
 
 		// the following are from UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013.
-		//																									# of										block	block RAM
-		//		id			alt. ID			name															sectors							ram			size	address
-		{	{ 0x0a07102b,	0x1a07102b	},	"LPC1111FD20",													2,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0a16d02b,	0x1a16d02b	},	"LPC1111FDH20/002",												2,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x041e502b,	~0			},	"LPC1111FHN33/101",												2,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2516d02b,	~0			},	"LPC1111FHN33/[101|102]",										2,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0416502b,	~0			},	"LPC1111FHN33/201",												2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2516902b,	~0			},	"LPC1111FHN33/[201|202]",										2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00010013,	~0			},	"LPC1111FHN33/103",												2,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00010012,	~0			},	"LPC1111FHN33/203",												2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0a24902b,	0x1a24902b	},	"LPC1112[FD20|FDH20|FDH28]/102",								4,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x042d502b,	~0			},	"LPC1112FHN33/101",												4,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2524d02b,	~0			},	"LPC1112FHN33/[101|102]",										4,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0425502b,	~0			},	"LPC1112FHN33/201",												4,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2524902b,	~0			},	"LPC1112[FHN33/201|FHN33/202|FHN24/202|FHI33/202]",				4,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00020023,	~0			},	"LPC1112FHN33/103",												4,			sectorMap4k,		2048,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00020022,	~0			},	"LPC1112FH[N|I]33/203",											4,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0434502b,	~0			},	"LPC1113FHN33/201",												6,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2532902b,	~0			},	"LPC1113[FBD|FHN]/[201|202]",									6,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0434102b,	~0			},	"LPC1113FHN33/301",												6,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2532102b,	~0			},	"LPC1113[FBD48|FHN33]/[301/302]",								6,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00030030,	~0			},	"LPC1113[FBD48|FHN33]/303",										6,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00030032,	~0			},	"LPC1113FHN33/203",												6,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0a40902b,	0x1a40902b	},	"LPC1114[FDH|FN]28/102",										8,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0444502b,	~0			},	"LPC1114FHN33/201",												8,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2540902b,	~0			},	"LPC1114FHN33/[201|202]",										8,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x0444102b,	~0			},	"LPC1114[FHN33|FBD48]/301",										8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2540102b,	~0			},	"LPC1114F[FHN33/301|FHN33/302|FHI33/302|FBD48/302|FBD100/302]",	8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00040040,	~0			},	"LPC1114[FBD48|FHN33]/303",										8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00040042,	~0			},	"LPC1114FHN33/203",												8,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00040060,	~0			},	"LPC1114FBD48/323",												12,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00040070,	~0			},	"LPC1114[FBD48|FHN33]/333",										14,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00040040,	~0			},	"LPC1114FHI33/303",												8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x00050080,	~0			},	"LPC1115FBD48/303",												16,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x1421102b,	~0			},	"LPC11C12FBD48/301",											4,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x1440102b,	~0			},	"LPC11C14FBD48/301",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x1431102b,	~0			},	"LPC11C22FBD48/301",											4,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x1430102b,	~0			},	"LPC11C24FBD48/301",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE	},
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name															sectors							banks	ram			size	address
+		{	{ 0x0a07102b,	0x1a07102b	},	~0,	"LPC1111FD20",													2,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0a16d02b,	0x1a16d02b	},	~0,	"LPC1111FDH20/002",												2,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x041e502b,	~0			},	~0,	"LPC1111FHN33/101",												2,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2516d02b,	~0			},	~0,	"LPC1111FHN33/[101|102]",										2,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0416502b,	~0			},	~0,	"LPC1111FHN33/201",												2,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2516902b,	~0			},	~0,	"LPC1111FHN33/[201|202]",										2,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00010013,	~0			},	~0,	"LPC1111FHN33/103",												2,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00010012,	~0			},	~0,	"LPC1111FHN33/203",												2,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0a24902b,	0x1a24902b	},	~0,	"LPC1112[FD20|FDH20|FDH28]/102",								4,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x042d502b,	~0			},	~0,	"LPC1112FHN33/101",												4,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2524d02b,	~0			},	~0,	"LPC1112FHN33/[101|102]",										4,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0425502b,	~0			},	~0,	"LPC1112FHN33/201",												4,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2524902b,	~0			},	~0,	"LPC1112[FHN33/201|FHN33/202|FHN24/202|FHI33/202]",				4,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00020023,	~0			},	~0,	"LPC1112FHN33/103",												4,			sectorMap4k,		1,		2048,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00020022,	~0			},	~0,	"LPC1112FH[N|I]33/203",											4,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0434502b,	~0			},	~0,	"LPC1113FHN33/201",												6,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2532902b,	~0			},	~0,	"LPC1113[FBD|FHN]/[201|202]",									6,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0434102b,	~0			},	~0,	"LPC1113FHN33/301",												6,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2532102b,	~0			},	~0,	"LPC1113[FBD48|FHN33]/[301/302]",								6,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00030030,	~0			},	~0,	"LPC1113[FBD48|FHN33]/303",										6,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00030032,	~0			},	~0,	"LPC1113FHN33/203",												6,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0a40902b,	0x1a40902b	},	~0,	"LPC1114[FDH|FN]28/102",										8,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0444502b,	~0			},	~0,	"LPC1114FHN33/201",												8,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2540902b,	~0			},	~0,	"LPC1114FHN33/[201|202]",										8,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x0444102b,	~0			},	~0,	"LPC1114[FHN33|FBD48]/301",										8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2540102b,	~0			},	~0,	"LPC1114F[FHN33/301|FHN33/302|FHI33/302|FBD48/302|FBD100/302]",	8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00040040,	~0			},	~0,	"LPC1114[FBD48|FHN33]/303",										8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00040042,	~0			},	~0,	"LPC1114FHN33/203",												8,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00040060,	~0			},	~0,	"LPC1114FBD48/323",												12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00040070,	~0			},	~0,	"LPC1114[FBD48|FHN33]/333",										14,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00040040,	~0			},	~0,	"LPC1114FHI33/303",												8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x00050080,	~0			},	~0,	"LPC1115FBD48/303",												16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x1421102b,	~0			},	~0,	"LPC11C12FBD48/301",											4,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x1440102b,	~0			},	~0,	"LPC11C14FBD48/301",											8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x1431102b,	~0			},	~0,	"LPC11C22FBD48/301",											4,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x1430102b,	~0			},	~0,	"LPC11C24FBD48/301",											8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
 
 		// the following are from UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012.
-		//																									# of										block	block RAM
-		//		id			alt. ID			name															sectors							ram			size	address
-		{	{0x2C42502B,	~0			},	"LPC1311FHN33",													2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
-		{	{0x1816902B,	~0			},	"LPC1311FHN33/01",												2,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
-		{	{0x2C40102B,	~0			},	"LPC1313F[HN33|BD48]",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
-		{	{0x1830102B,	~0			},	"LPC1313F[HN33|BD48]/01",										8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
-		{	{0x3D01402B,	~0			},	"LPC1342F[HN33|BD48]",											4,			sectorMap4k,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
-		{	{0x3D00002B,	~0			},	"LPC1343F[HN33|BD48]",											8,			sectorMap4k,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name																sectors						banks	ram			size	address
+		{	{0x2C42502B,	~0			},	~0,	"LPC1311FHN33",													2,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1816902B,	~0			},	~0,	"LPC1311FHN33/01",												2,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x2C40102B,	~0			},	~0,	"LPC1313F[HN33|BD48]",											8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1830102B,	~0			},	~0,	"LPC1313F[HN33|BD48]/01",										8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x3D01402B,	~0			},	~0,	"LPC1342F[HN33|BD48]",											4,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x3D00002B,	~0			},	~0,	"LPC1343F[HN33|BD48]",											8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
 
-		// the following are from UM10360, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014.
-		//																									# of										block	block RAM
-		//		id			alt. ID			name															sectors							ram			size	address
-		{	{0x25001118,	0x25001110	},	"LPC1751FBD80",													8,			sectorMap4k,		8192,		1024,	0x10000300,	0			},
-		{	{0x25001121,	~0			},	"LPC1752FBD80",													16,			sectorMap4k,		16384,		1024,	0x10000300,	0			},
+		// the following are from UM10360,	~0, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014.
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name																sectors						banks	ram			size	address
+		{	{0x25001118,	0x25001110	},	~0,	"LPC1751FBD80",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	0			},
+		{	{0x25001121,	~0			},	~0,	"LPC1752FBD80",													16,			sectorMap4k,		1,		16384,		1024,	0x10000300,	0			},
 
-		// the following are from UM10470, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014.
-		//																									# of										block	block RAM
-		//		id			alt. ID			name															sectors							main ram	size	address
-		{	{0x27011132,	~0			},	"LPC1774",														18,			sectorMapLpc17xx,	32*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 128kB flash
-		{	{0x27191F43,	~0			},	"LPC1776",														22,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
-		{	{0x27193747,	~0			},	"LPC1777",														30,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
-		{	{0x27193F47,	~0			},	"LPC1778",														30,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
-		{	{0x281D1743,	~0			},	"LPC1785",														22,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
-		{	{0x281D1F43,	~0			},	"LPC1786",														22,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
-		{	{0x281D3747,	~0			},	"LPC1787",														30,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
-		{	{0x281D3F47,	~0			},	"LPC1788",														30,			sectorMapLpc17xx,	64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
+		// the following are from UM10470,	~0, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014.
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name																sectors						banks	main ram	size	address
+		{	{0x27011132,	~0			},	~0,	"LPC1774",														18,			sectorMapLpc17xx,	1,		32*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 128kB flash
+		{	{0x27191F43,	~0			},	~0,	"LPC1776",														22,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
+		{	{0x27193747,	~0			},	~0,	"LPC1777",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
+		{	{0x27193F47,	~0			},	~0,	"LPC1778",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
+		{	{0x281D1743,	~0			},	~0,	"LPC1785",														22,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
+		{	{0x281D1F43,	~0			},	~0,	"LPC1786",														22,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
+		{	{0x281D3747,	~0			},	~0,	"LPC1787",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
+		{	{0x281D3F47,	~0			},	~0,	"LPC1788",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
 
 		// the following are from UM10211, LPC23xx User manual, Rev. 4.1 -- 5 September 2012
-		//																									# of										block	block RAM
-		//		id			alt. ID			name															sectors							main ram	size	address
-		{	{0x1600f701,	~0			},	"LPC2361",														9,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	// vectors are remapped in ISP
-		{	{0x1600ff22,	~0			},	"LPC2362",														11,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   mode so skip that area when
-		{	{0x1600f902,	~0			},	"LPC2364",														11,			sectorMapLpc23xx,	8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   verifying
-		{	{0x1600e823,	~0			},	"LPC2365",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1600f923,	~0			},	"LPC2366",														15,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1600e825,	~0			},	"LPC2367",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1600f925,	~0			},	"LPC2368",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1700e825,	~0			},	"LPC2377",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1700fd25,	~0			},	"LPC2378",														28,			sectorMapLpc23xx,	32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1700ff35,	~0			},	"LPC2387",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1800ff35,	~0			},	"LPC2388",														28,			sectorMapLpc23xx,	64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name															sectors							banks	main ram	size	address
+		{	{0x1600f701,	~0			},	~0,	"LPC2361",														9,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	// vectors are remapped in ISP
+		{	{0x1600ff22,	~0			},	~0,	"LPC2362",														11,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   mode so skip that area when
+		{	{0x1600f902,	~0			},	~0,	"LPC2364",														11,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   verifying
+		{	{0x1600e823,	~0			},	~0,	"LPC2365",														15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1600f923,	~0			},	~0,	"LPC2366",														15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1600e825,	~0			},	~0,	"LPC2367",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1600f925,	~0			},	~0,	"LPC2368",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1700e825,	~0			},	~0,	"LPC2377",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1700fd25,	~0			},	~0,	"LPC2378",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1700ff35,	~0			},	~0,	"LPC2387",														28,			sectorMapLpc23xx,	1,		64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1800ff35,	~0			},	~0,	"LPC2388",														28,			sectorMapLpc23xx,	1,		64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+
+		// the following are from UM10430, LPC18xx User manual, Rev. 2.8 -- 10 December 2015
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID			word1	name														sectors							banks	main ram	size	address
+		{	{0xf000d830,	~0			},	0x00,	"LPC1850FET[180|256]",										0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf000d860,	~0			},	0x00,	"LPC18S50FET[180|256]",										0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf000da30,	~0			},	0x00,	"LPC1830[[FET[100|180|256]|FBD144]",						0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf000da60,	~0			},	0x00,	"LPC18S30[[FET[100|256]|FBD144]",							0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00adb3c,	~0			},	0x00,	"LPC1820[FET100|FBD[100|144]]",								0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00adb6c,	~0			},	0x00,	"LPC18S20FBD144",											0,			sectorMapLpc18xx,	0,		96*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00b5b3f,	~0			},	0x00,	"LPC1810[FET100|FBD144]",									0,			sectorMapLpc18xx,	0,		64*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00b5b6f,	~0			},	0x00,	"LPC18S10[FET[100|180]|FBD144]",							0,			sectorMapLpc18xx,	0,		64*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001d830,	~0			},	0x00,	"LPC1857[FET[180|256]|FBD208]",								15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001d860,	~0			},	0x00,	"LPC18S57JBD208",											15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001d830,	~0			},	0x44,	"LPC1853[FET[180|256]|FBD208]",								11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001da30,	~0			},	0x00,	"LPC1837FET[[100|180|256]FBD144]",							15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001da60,	~0			},	0x00,	"LPC18S37[JET100|JBD144]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001da30,	~0			},	0x44,	"LPC1833FET[[100|180|256]FBD144]",							11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3c,	~0			},	0x00,	"LPC1827[JBD144|JET100]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3c,	~0			},	0x22,	"LPC1823[JBD144|JET100]",									11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3c,	~0			},	0x44,	"LPC1823[JBD144|JET100]",									11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3c,	~0			},	0x80,	"LPC1822[JBD144|JET100]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3f,	~0			},	0x00,	"LPC1817[JBD144|JET100]",									15,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf001db3f,	~0			},	0x22,	"LPC1815[JBD144|JET100]",									13,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3f,	~0			},	0x44,	"LPC1813[JBD144|JET100]",									11,			sectorMapLpc18xx,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
+		{	{0xf00bdb3f,	~0			},	0x80,	"LPC1812[JBD144|JET100]",									15,			sectorMapLpc18xx,	1,		32*1024,	1024,	0x10000200,	UUENCODE			},
 	},
 	partDefUnknown=
 	{
@@ -203,7 +236,7 @@ int GetSectorAddr(unsigned int addr, partinfo_t *p)
 }
 
 static unsigned int GetFlashSize(partinfo_t *p)
-// return size of flash (add up size of all sectors) or zero
+// return size of flash (add up size of all sectors, multiple by number of banks) or zero
 // if sector size map is undefined.
 {
 	unsigned int
@@ -218,7 +251,7 @@ static unsigned int GetFlashSize(partinfo_t *p)
 			size+=p->sectorSizeMap[i];
 		}
 	}
-	return(size);
+	return(size*p->numBanks);
 }
 
 void ReportPartInfo(int level,partinfo_t *p)
@@ -256,12 +289,14 @@ int GetPartInfo(int fd,partinfo_t *p)
 		j,
 		found;
 	unsigned int
-		id;
+		id,
+		id1;
 
 	found=0;
 	memcpy(p,&partDefUnknown,sizeof(partinfo_t));
-	id=ReadPartID(fd);
+	id=ReadPartID(fd,&id1);
 	p->id[0]=id;
+	p->id1=id1;
 	p->idIdx=0;
 	if(id!=~0)
 	{
@@ -269,7 +304,7 @@ int GetPartInfo(int fd,partinfo_t *p)
 		{
 			for(j=0;!found&&(j<2);j++)
 			{
-				if(partDef[i].id[j]==id)
+				if((partDef[i].id[j]==id)&&((partDef[i].id1==~0)||(partDef[i].id1==id1)))
 				{
 					memcpy(p,&partDef[i],sizeof(partinfo_t));
 					p->idIdx=j;

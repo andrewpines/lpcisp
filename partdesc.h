@@ -3,12 +3,14 @@ typedef struct
 {
 	// these are definitions which are set by the part table in partdesc.c
 	unsigned int
-		id[2];				// some parts have more than one ID.  set the second to ~0 if unused.
+		id[2],				// some parts have more than one ID.  set the second to ~0 if unused.
+		id1;				// some parts have a second ID word.  set to ~0 if unused.
 	const char
 		*name;
 	const int
 		numSectors,
 		*sectorSizeMap,
+		numBanks,
 		ramSize,
 		flashBlockSize,		// number of bytes to write at once.  depends on available RAM.
 		flashBlockRAMBase;	// start address in RAM of buffer to use for writing to flash
