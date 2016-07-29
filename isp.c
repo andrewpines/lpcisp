@@ -454,6 +454,7 @@ int ResetTarget(int fd)
 	if(resetPin!=PIN_NONE)
 	{
 		SetReset(fd,0);
+		usleep(1000000);
 		usleep(100000);
 		SetReset(fd,1);
 		return(0);
@@ -507,11 +508,12 @@ int Unlock(int fd)
 	char
 		response[256];
 
-	if(SendCommand(fd,"U 23130",response,"0")>=0)
+	if(SendCommand(fd,"U 23130",response,"0")>0)
 	{
 		ReportString(REPORT_DEBUG_PROCESS,"unlocked\n");
 		return(1);
 	}
+	ReportString(REPORT_DEBUG_PROCESS,"failed to unlock: %s\n",GetErrorString(response));
 	return(0);
 }
 
@@ -556,7 +558,7 @@ int Echo(int fd, int state)
 	return(0);
 }
 
-int PrepareSectorsForWrite(int fd, int startSector, int endSector)
+static int PrepareSectorsForWrite(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo)
 // prepare a range of sectors for erase/write.  return 1 on success, 0 on failure
 {
 	char
@@ -565,6 +567,10 @@ int PrepareSectorsForWrite(int fd, int startSector, int endSector)
 	if(startSector<=endSector)
 	{
 		sprintf(buffer,"P %d %d",startSector,endSector);
+		if(partInfo->numBanks>1)
+		{
+			sprintf(buffer,"%s %d",buffer,bank);
+		}
 		switch(SendCommand(fd,buffer,buffer,"0"))
 		{
 			case 1:
@@ -615,7 +621,7 @@ int CopyRAMtoFlash(int fd, unsigned int src, unsigned int dest, unsigned int len
 	return(0);
 }
 
-int Erase(int fd, int startSector, int endSector)
+int Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo)
 // erase a range of sectors.  return 1 on success, 0 on failure
 {
 	char
@@ -623,9 +629,13 @@ int Erase(int fd, int startSector, int endSector)
 
 	if(startSector<=endSector)
 	{
-		if(PrepareSectorsForWrite(fd,startSector,endSector))
+		if(PrepareSectorsForWrite(fd,startSector,endSector,0,partInfo))	// @@@ only support bank 0 for now
 		{
 			sprintf(buffer,"E %d %d",startSector,endSector);
+			if(partInfo->numBanks>1)
+			{
+				sprintf(buffer,"%s %d",buffer,bank);
+			}
 			switch(SendCommand(fd,buffer,buffer,"0"))
 			{
 				case 1:
@@ -687,24 +697,33 @@ int BlankCheck(int fd, int startSector, int endSector)
 	return(-1);
 }
 
-unsigned int ReadPartID(int fd)
+unsigned int ReadPartID(int fd, unsigned int *id1)
 // read and return part ID or ~0 on error
+// some parts (LPC18xxx) return an extra byte
+// for the part ID.  to cope with this we try
+// to read the extra byte but don't flag an
+// error if we time out waiting for it.
 {
 	char
 		buffer[256];
 	int
-		code;
+		id;
 
+	*id1=0;
 	switch(SendCommand(fd,"J",buffer,"0"))
 	{
 		case 1:
 			// success
 			if(ReadString(fd,buffer))
 			{
-				code=atoi(buffer);
-				if(code)
+				id=atoi(buffer);
+				if(id)
 				{
-					return(code);
+					if(ReadString(fd,buffer))
+					{
+						*id1=atoi(buffer);
+					}
+					return(id);
 				}
 			}
 			break;
@@ -1074,7 +1093,7 @@ int WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int lengt
 				ReportString(REPORT_DEBUG_PROCESS,"copied %d bytes into RAM for 0x%08x\n",bytesToWrite,addr);
 				// prepare the sector for writing
 				curSector=GetSectorAddr(addr,partInfo);	// get number of the sector containing address of this block
-				if(PrepareSectorsForWrite(fd,curSector,curSector))
+				if(PrepareSectorsForWrite(fd,curSector,curSector,0,partInfo))	// @@@ only support bank 0 for now
 				{
 					// write to flash
 					if(CopyRAMtoFlash(fd,partInfo->flashBlockRAMBase,addr,partInfo->flashBlockSize))
