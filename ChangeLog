@@ -48,6 +48,10 @@
 	    added support for non-standard baud rates in OSX
 	  0.0.18 -- 10 July 2016
 	    added flag for HAS_UID, skip trying to read or report UID on parts which don't support it (need to fully update partDef[])
+	  0.0.19 -- 29 July, 2016
+	    added support for LPC18xx parts.  these parts may have multiple flash banks and have two word IDs so the part description
+	    table was extended to add parameters to support the differences.  the low level functions now have the ability to write to 
+	    arbitrary banks but for now only bank 0 (A) is supported.
 
 	to do:
 		add support for lots more parts
