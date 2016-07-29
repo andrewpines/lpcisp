@@ -93,7 +93,7 @@ void ReportCharCtrl(int level, const char c)
 	}
 	else
 	{
-		ReportString(level,"<%02x>",c);
+		ReportString(level,"<%02x>",(unsigned)c);
 	}
 }
 
