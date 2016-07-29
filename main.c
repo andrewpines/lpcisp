@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.18";
+	*version="0.0.19";
 
 static int
 	fd,
@@ -520,7 +520,7 @@ int main(int argc,char *argv[])
 				{
 					if(erase)
 					{
-						fail=(Erase(fd,0,partInfo.numSectors-1)!=1);
+						fail=(Erase(fd,0,partInfo.numSectors-1,0,&partInfo)!=1);	// @@@ only support one bank for now
 						if(fail)
 						{
 							ReportString(REPORT_ERROR,"failed to erase device\n");
