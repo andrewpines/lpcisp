@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.20";
+	*version="0.0.21";
 
 static int
 	fd,
@@ -20,6 +20,7 @@ static int
 	start,
 	length,
 	echo,
+	vector,
 	burn,
 	erase,
 	verify,
@@ -81,6 +82,12 @@ static int EraseOpt(int *argc, char ***argv)
 static int EchoOpt(int *argc, char ***argv)
 {
 	echo=1;
+	return(0);
+}
+
+static int VectorOpt(int *argc, char ***argv)
+{
+	vector=1;
 	return(0);
 }
 
@@ -349,6 +356,7 @@ static token_t
 		{	"-hex",			HexFileOpt,		" filename          specify name of hex file to load"																	},
 		{	"-erase",		EraseOpt,		"                 erase target device"																					},
 		{	"-echo",		EchoOpt,		"                  enable echo from target (default is no echo)"														},
+		{	"-vector",		VectorOpt,		"                patch vector 7 to 2's complement of the sum of vectors 0 through 6 regardless of address of image"		},
 		{	"-write",		WriteOpt,		"                 write image to target device"																			},
 		{	"-verify",		VerifyOpt,		"                verify image"																							},
 		{	"-dump",		DumpOpt,		" address length   read from length bytes from memory starting at address, dump to console"								},
@@ -362,7 +370,7 @@ static void Usage(const char *progName)
 	int
 		i;
 
-	ReportString(REPORT_ERROR,"%s: ver. %s (c) 2015 Cosmodog, Ltd.\n",progName,version);
+	ReportString(REPORT_ERROR,"%s: ver. %s (c) 2015, 2016 Cosmodog, Ltd.\n",progName,version);
 	ReportString(REPORT_ERROR,"usage:\n");
 	ReportString(REPORT_ERROR,"  %s [options] device\n",progName);
 	ReportString(REPORT_ERROR,"where\n");
@@ -410,6 +418,7 @@ int main(int argc,char *argv[])
 		SetReportLevel(REPORT_INFO);
 		erase=0;
 		echo=0;
+		vector=0;
 		burn=0;
 		verify=0;
 		term=0;
@@ -530,8 +539,8 @@ int main(int argc,char *argv[])
 					// if data image was loaded we can write it to flash and/or verify it
 					if(!fail&&data)
 					{
-						// if image starts at 0x0000 fix up the vector table.
-						if(start==0)
+						// if image starts at 0x0000 or forced fix up the vector table.
+						if(vector||(start==0))
 						{
 							// vector 7 is the 2's comp of the arithmetic sum of vectors 0-6.
 							vect=(unsigned int *)data;

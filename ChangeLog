@@ -55,6 +55,8 @@
 	  0.0.20 -- 29 July, 2016
 	    improved hex file handling to work properly with files which don't start at address zero
 	    expanded sector map in part description to include bank and base address in addition to size (banks still not fully supported)
+	  0.0.21 -- 30 July, 2016
+	    added -vector argument to allow forcing of vector table patching when image does not start at zero
 
 	to do:
 		add support for lots more parts
