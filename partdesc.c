@@ -421,12 +421,10 @@ int GetSectorAddr(unsigned int addr, partinfo_t *p)
 	int
 		sectorNum;
 	
-printf("find address 0x%08x\n",addr);
 	if(p->sectorMap)
 	{
 		for(sectorNum=0;sectorNum<p->numSectors;sectorNum++)
 		{
-printf("%d: 0x%08x through 0x%08x\n",sectorNum,p->sectorMap[sectorNum].base,p->sectorMap[sectorNum].base+p->sectorMap[sectorNum].size-1);
 			if((p->sectorMap[sectorNum].base<=addr)&&((p->sectorMap[sectorNum].base+p->sectorMap[sectorNum].size)>addr))
 			{
 				return(sectorNum);
