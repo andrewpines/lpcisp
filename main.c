@@ -346,7 +346,7 @@ static token_t
 	{
 			// token name	function		help string
 		{	"-reset",		ResetOpt,		" ctrl            map reset to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
-		{	"-isp",			ISPOpt,			" ctrl              map ISP to a serial control signal.  ctrl may be one of dtr, !dtr, rts, or !rts"					},
+		{	"-isp",			ISPOpt,			" ctrl              map ISP to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
 		{	"-hold",		HoldOpt,		"                  assert ISP through programming sequence (default is to negate at initialization)"					},
 		{	"-baud",		BaudOpt,		" rate             set the baud rate for ISP mode (default=115200)"														},
 		{	"-tbaud",		TBaudOpt,		" rate            set the baud rate for the terminal (default=115200)"													},
