@@ -12,7 +12,7 @@
 // as binary is problematic because the command protocol is ASCII and it needs to switch between ASCII and binary.  This creates
 // issues at the edges as it changes modes because line termination is not handled consistently across all parts.  When sending or
 // receiving binary data the presence/absence/ambiguity of the second character of line termination makes it unclear whether
-// that second character is the second part of the termination or the first binary character.  Historically different OS's use
+// that second character is the second part of the termination or the first binary character.  Historically, different OS's use
 // different termination:
 //  CR -- pre-OSX Mac
 //  LF -- Unix
@@ -25,8 +25,7 @@
 //   LPC1788: consistently accepts CR, LF, or CRLF; returns either CRLF or echos the termination that was sent to it (context-dependent)
 //   LPC1313: accepts CRLF; sometimes returns CR (after 'Synchronized'), other times returns CRLF
 //
-//  to handle this
-// consistently an extra flag is needed to indicate what form of termination to use for a given part.
+//  to handle this consistently an extra flag is needed to indicate what form of termination to use for a given part.
 //
 // this table is incomplete and likely has errors.  please forward corrections and additions via this page:
 //    https://github.com/andrewpines/lpcisp/issues
@@ -264,11 +263,11 @@ static const sectormap_t
 		{	0,		0x00070000,	0x08000,	},
 
 		{	0,		0x00078000,	0x01000,	},		// 22-27 are 4kB
-		{	0,		0x00079000,	0x01000,	},		
-		{	0,		0x0007a000,	0x01000,	},		
-		{	0,		0x0007b000,	0x01000,	},		
-		{	0,		0x0007c000,	0x01000,	},		
-		{	0,		0x0007d000,	0x01000,	},		
+		{	0,		0x00079000,	0x01000,	},
+		{	0,		0x0007a000,	0x01000,	},
+		{	0,		0x0007b000,	0x01000,	},
+		{	0,		0x0007c000,	0x01000,	},
+		{	0,		0x0007d000,	0x01000,	},
 	};
 
 const partinfo_t
@@ -391,6 +390,16 @@ const partinfo_t
 		{	{0xf001db3f,	~0			},	0x22,	"LPC1815[JBD144|JET100]",									13,			sectorMapLpc18x5,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
 		{	{0xf00bdb3f,	~0			},	0x44,	"LPC1813[JBD144|JET100]",									11,			sectorMapLpc18x3,	2,		32*1024,	1024,	0x10000200,	UUENCODE			},
 		{	{0xf00bdb3f,	~0			},	0x80,	"LPC1812[JBD144|JET100]",									15,			sectorMapLpc18x2,	1,		32*1024,	1024,	0x10000200,	UUENCODE			},
+
+		// the following are from UM10736, LPC15xx User manual, Rev. 1.1 -- 3 March 2014
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID			word1	name														sectors							banks	main ram	size	address
+		{	{0x00001549,	~0			},	0x00,	"LPC1549",													64,			sectorMap4k,		1,		36*1024,	1024,	0x02000200,	TERM_CRLF			},
+		{	{0x00001548,	~0			},	0x00,	"LPC1548",													32,			sectorMap4k,		1,		20*1024,	1024,	0x02000200,	TERM_CRLF			},
+		{	{0x00001547,	~0			},	0x00,	"LPC1547",													16,			sectorMap4k,		1,		12*1024,	1024,	0x02000200,	TERM_CRLF			},
+		{	{0x00001519,	~0			},	0x00,	"LPC1519",													64,			sectorMap4k,		1,		36*1024,	1024,	0x02000200,	TERM_CRLF			},
+		{	{0x00001518,	~0			},	0x00,	"LPC1518",													32,			sectorMap4k,		1,		20*1024,	1024,	0x02000200,	TERM_CRLF			},
+		{	{0x00001517,	~0			},	0x00,	"LPC1517",													16,			sectorMap4k,		1,		12*1024,	1024,	0x02000200,	TERM_CRLF			},
 	},
 	partDefUnknown=
 	{
@@ -414,13 +423,13 @@ void DumpPartList(FILE *fp)
 }
 
 int GetSectorAddr(unsigned int addr, partinfo_t *p)
-// given an address locate the number of the sector containing 
+// given an address locate the number of the sector containing
 // that address or -1 if out of range (address off end of device)
 // or sector map undefined.
 {
 	int
 		sectorNum;
-	
+
 	if(p->sectorMap)
 	{
 		for(sectorNum=0;sectorNum<p->numSectors;sectorNum++)
@@ -431,7 +440,7 @@ int GetSectorAddr(unsigned int addr, partinfo_t *p)
 			}
 		}
 	}
-	return(-1);	
+	return(-1);
 }
 
 static unsigned int GetFlashSize(partinfo_t *p)
@@ -441,7 +450,7 @@ static unsigned int GetFlashSize(partinfo_t *p)
 	unsigned int
 		i,
 		size;
-	
+
 	size=0;
 	if(p->sectorMap)
 	{
