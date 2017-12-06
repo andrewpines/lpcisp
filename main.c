@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.21";
+	*version="0.0.22";
 
 static int
 	fd,
@@ -567,10 +567,15 @@ int main(int argc,char *argv[])
 								s;
 							
 							s=0;
-							if((partInfo.flags&VECT_REMAP)&&(start<64))
+							if((partInfo.flags&VECT_REMAP64)&&(start<64))
 							{
 								// device remaps vector table in ISP mode, so we can't verify that section
 								s=64;
+							}
+							else if((partInfo.flags&VECT_REMAP256)&&(start<256))
+							{
+								// device remaps vector table in ISP mode, so we can't verify that section
+								s=256;
 							}
 							ReportString(REPORT_INFO,"verifying... 0x%08x",start);
 							for(addr=start;!fail&&(addr<start+length);addr+=256)

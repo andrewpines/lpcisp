@@ -142,7 +142,7 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *baseAd
 				case 5: // start linear address
 					printf("start linear address: 0x%08x\n",(ASCII2HexByte(line[9],line[10])<<24)|(ASCII2HexByte(line[11],line[12])<<16));
 					break;
-				case 2: // exteneded segment address
+				case 2: // extended segment address
 				default:
 					// don't know how to handle this type of record, fall through and return -1
 					ReportString(REPORT_ERROR,"unknown record type \"%02x\"\n",type);

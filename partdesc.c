@@ -324,7 +324,7 @@ const partinfo_t
 
 		// the following are from UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012.
 		//																										# of							flash				block	block RAM
-		//		id			alt. ID				name																sectors						banks	ram			size	address
+		//		id			alt. ID				name															sectors							banks	ram			size	address
 		{	{0x2C42502B,	~0			},	~0,	"LPC1311FHN33",													2,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
 		{	{0x1816902B,	~0			},	~0,	"LPC1311FHN33/01",												2,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
 		{	{0x2C40102B,	~0			},	~0,	"LPC1313F[HN33|BD48]",											8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
@@ -334,13 +334,13 @@ const partinfo_t
 
 		// the following are from UM10360,	~0, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014.
 		//																										# of							flash				block	block RAM
-		//		id			alt. ID				name																sectors						banks	ram			size	address
+		//		id			alt. ID				name															sectors							banks	ram			size	address
 		{	{0x25001118,	0x25001110	},	~0,	"LPC1751FBD80",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	0			},
 		{	{0x25001121,	~0			},	~0,	"LPC1752FBD80",													16,			sectorMap4k,		1,		16384,		1024,	0x10000300,	0			},
 
 		// the following are from UM10470,	~0, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014.
 		//																										# of							flash				block	block RAM
-		//		id			alt. ID				name																sectors						banks	main ram	size	address
+		//		id			alt. ID				name															sectors							banks	main ram	size	address
 		{	{0x27011132,	~0			},	~0,	"LPC1774",														18,			sectorMapLpc17xx,	1,		32*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 128kB flash
 		{	{0x27191F43,	~0			},	~0,	"LPC1776",														22,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 256kB flash
 		{	{0x27193747,	~0			},	~0,	"LPC1777",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
@@ -350,20 +350,37 @@ const partinfo_t
 		{	{0x281D3747,	~0			},	~0,	"LPC1787",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
 		{	{0x281D3F47,	~0			},	~0,	"LPC1788",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE	},	// @@@ 512kB flash
 
+		// the following are from UM10360, LPC176x/5x User manual, Rev. 4. 1 -- 19 December 2016
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID			word1	name														sectors							banks	main ram	size	address
+		{	{0x26113F37,	~0			},	~0,	"LPC1769",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x26013F37,	~0			},	~0,	"LPC1768",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x26012837,	~0			},	~0,	"LPC1767",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x26013F33,	~0			},	~0,	"LPC1766",														22,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x26013733,	~0			},	~0,	"LPC1765",														22,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x26011922,	~0			},	~0,	"LPC1764",														18,			sectorMapLpc17xx,	1,		32*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x26012033,	~0			},	~0,	"LPC1763",														22,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x25113737,	~0			},	~0,	"LPC1759",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x25013F37,	~0			},	~0,	"LPC1758",														30,			sectorMapLpc17xx,	1,		64*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x25011723,	~0			},	~0,	"LPC1756",														22,			sectorMapLpc17xx,	1,		32*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x25011722,	~0			},	~0,	"LPC1754",														18,			sectorMapLpc17xx,	1,		32*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x25001121,	~0			},	~0,	"LPC1752",														16,			sectorMapLpc17xx,	1,		16*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+		{	{0x25001118,	0x25001110	},	~0,	"LPC1751",														8,			sectorMapLpc17xx,	1,		8*1024,		1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
+
 		// the following are from UM10211, LPC23xx User manual, Rev. 4.1 -- 5 September 2012
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID				name															sectors							banks	main ram	size	address
-		{	{0x1600f701,	~0			},	~0,	"LPC2361",														9,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	// vectors are remapped in ISP
-		{	{0x1600ff22,	~0			},	~0,	"LPC2362",														11,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   mode so skip that area when
-		{	{0x1600f902,	~0			},	~0,	"LPC2364",														11,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP	},	//   verifying
-		{	{0x1600e823,	~0			},	~0,	"LPC2365",														15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1600f923,	~0			},	~0,	"LPC2366",														15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1600e825,	~0			},	~0,	"LPC2367",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1600f925,	~0			},	~0,	"LPC2368",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1700e825,	~0			},	~0,	"LPC2377",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1700fd25,	~0			},	~0,	"LPC2378",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1700ff35,	~0			},	~0,	"LPC2387",														28,			sectorMapLpc23xx,	1,		64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
-		{	{0x1800ff35,	~0			},	~0,	"LPC2388",														28,			sectorMapLpc23xx,	1,		64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP	},
+		{	{0x1600f701,	~0			},	~0,	"LPC2361",														9,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP64	},	// vectors are remapped in ISP
+		{	{0x1600ff22,	~0			},	~0,	"LPC2362",														11,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},	//   mode so skip that area when
+		{	{0x1600f902,	~0			},	~0,	"LPC2364",														11,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP64	},	//   verifying
+		{	{0x1600e823,	~0			},	~0,	"LPC2365",														15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x1600f923,	~0			},	~0,	"LPC2366",														15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x1600e825,	~0			},	~0,	"LPC2367",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x1600f925,	~0			},	~0,	"LPC2368",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x1700e825,	~0			},	~0,	"LPC2377",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x1700fd25,	~0			},	~0,	"LPC2378",														28,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x1700ff35,	~0			},	~0,	"LPC2387",														28,			sectorMapLpc23xx,	1,		64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x1800ff35,	~0			},	~0,	"LPC2388",														28,			sectorMapLpc23xx,	1,		64*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
 
 		// the following are from UM10430, LPC18xx User manual, Rev. 2.8 -- 10 December 2015
 		//																										# of							flash				block	block RAM

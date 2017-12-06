@@ -57,8 +57,14 @@
 	    expanded sector map in part description to include bank and base address in addition to size (banks still not fully supported)
 	  0.0.21 -- 30 July, 2016
 	    added -vector argument to allow forcing of vector table patching when image does not start at zero
+	  0.0.22 -- 6 December, 2017
+		removed debugging code
+		corrected usage instructions for -isp
+		added support for LPC154x, LPC151x, LPC175x, and LPC176x (via Todd Squires)
+		added flag for skipping first 256 bytes when verifying parts which re-map the bootloader into vector space in ISP mode (previously only support 64 bytes)
 
 	to do:
 		add support for lots more parts
 		allow write to start on non-page boundaries
 		enable XON/OFF handshaking where appropriate
+		consider including memmap register in part description structure of parts which have it, write 1 before verifying to allow access to full user flash space
