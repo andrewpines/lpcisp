@@ -74,6 +74,27 @@ static const sectormap_t
 		{	0,		0x0000e000,	0x1000,	},
 		{	0,		0x0000f000,	0x1000,	},
 	},
+	sectorMap8k[]=
+	{
+		// 8kB uniform sector map
+		//	bank	base		size
+		{	0,		0x00000000,	0x2000,	},
+		{	0,		0x00002000,	0x2000,	},
+		{	0,		0x00004000,	0x2000,	},
+		{	0,		0x00006000,	0x2000,	},
+		{	0,		0x00008000,	0x2000,	},
+		{	0,		0x0000a000,	0x2000,	},
+		{	0,		0x0000c000,	0x2000,	},
+		{	0,		0x0000e000,	0x2000,	},
+		{	0,		0x00010000,	0x2000,	},
+		{	0,		0x00012000,	0x2000,	},
+		{	0,		0x00014000,	0x2000,	},
+		{	0,		0x00016000,	0x2000,	},
+		{	0,		0x00018000,	0x2000,	},
+		{	0,		0x0001a000,	0x2000,	},
+		{	0,		0x0001c000,	0x2000,	},
+		{	0,		0x0001e000,	0x2000,	},
+	},
 	sectorMapLpc17xx[]=
 	{
 		// LPC17xx non-uniform sector map
@@ -235,6 +256,29 @@ static const sectormap_t
 		{	1,		0x1b060000,	0x10000,	},
 		{	1,		0x1b070000,	0x10000,	},
 	},
+	sectorMapLpc21xx[]=
+	{
+		// LPC21xx/LPC22xx non-uniform sector map
+		//	bank	base		size
+		{	0,		0x00000000,	0x2000,		},		// 0-7 are 8kB
+		{	0,		0x00002000,	0x2000,		},
+		{	0,		0x00004000,	0x2000,		},
+		{	0,		0x00006000,	0x2000,		},
+		{	0,		0x00008000,	0x2000,		},
+		{	0,		0x0000a000,	0x2000,		},
+		{	0,		0x0000c000,	0x2000,		},
+		{	0,		0x0000e000,	0x2000,		},
+		{	0,		0x00010000,	0x10000,	},		// 8 and 9 are 64kB
+		{	0,		0x00020000,	0x10000,	},
+		{	0,		0x00030000,	0x2000,		},		// 10-17 are 8kB
+		{	0,		0x00032000,	0x2000,		},
+		{	0,		0x00034000,	0x2000,		},
+		{	0,		0x00036000,	0x2000,		},
+		{	0,		0x00038000,	0x2000,		},
+		{	0,		0x0003a000,	0x2000,		},
+		{	0,		0x0003c000,	0x2000,		},
+		{	0,		0x0003e000,	0x2000,		},
+	},
 	sectorMapLpc23xx[]=
 	{
 		// LPC23xx non-uniform sector map
@@ -367,6 +411,33 @@ const partinfo_t
 		{	{0x25001121,	~0			},	~0,	"LPC1752",														16,			sectorMapLpc17xx,	1,		16*1024,	1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
 		{	{0x25001118,	0x25001110	},	~0,	"LPC1751",														8,			sectorMapLpc17xx,	1,		8*1024,		1024,	0x10000300,	UUENCODE|VECT_REMAP256	},
 
+		// the following are from UM10120, LPC2131/2/4/6/8 User manual, Rev. 4 -- 23 April 2012
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name															sectors							banks	main ram	size	address
+		{	{0x0002ff01,	~0			},	~0,	"LPC2131/LPC2131/01",											8,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE	},
+		{	{0x0002ff11,	~0			},	~0,	"LPC2132/LPC2132/01",											9,			sectorMapLpc23xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0002ff12,	~0			},	~0,	"LPC2134/LPC2134/01",											11,			sectorMapLpc23xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0002ff23,	~0			},	~0,	"LPC2136/LPC2136/01",											15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0002ff25,	~0			},	~0,	"LPC2138/LPC2138/01",											27,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE	},
+
+		// the following are from UM10114, LPC21xx and LPC22xx User manual, Rev. 4 -- 2 May 2012 @@@ these need to be tested (check line termination)
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name															sectors							banks	main ram	size	address
+		{	{0x0201ff01,	~0			},	~0,	"LPC2109",														8,			sectorMap8k,		1,		8*1024,		1024,	0x40000200,	UUENCODE	},
+		{	{0x0201ff12,	~0			},	~0,	"LPC2119",														16,			sectorMap8k,		1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0201ff13,	~0			},	~0,	"LPC2129",														18,			sectorMapLpc21xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0101ff12,	~0			},	~0,	"LPC2114",														16,			sectorMap8k,		1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0101ff13,	~0			},	~0,	"LPC2124",														18,			sectorMapLpc21xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0301ff13,	~0			},	~0,	"LPC2194",														18,			sectorMapLpc21xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0401ff13,	~0			},	~0,	"LPC2292",														18,			sectorMapLpc21xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0501ff13,	~0			},	~0,	"LPC2294",														18,			sectorMapLpc21xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0601ff13,	~0			},	~0,	"LPC2214/01",													18,			sectorMapLpc21xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},	
+		{	{0x0401ff12,	~0			},	~0,	"LPC2212/01",													16,			sectorMap8k,		1,		16*1024,	1024,	0x40000200,	UUENCODE	},	
+
+		// the LPC2210 has 16kB of RAM while the LPC2220 has 64kB but they have the same ID so they cannot be uniquely identified.
+		{	{0x0301ff12,	~0			},	~0,	"LPC2210/LPC2220/LPC2290",										0,			0,					0,		16*1024,	1024,	0x10000300,	UUENCODE	},
+		{	{0x0301ff32,	~0			},	~0,	"LPC2220C/LPC2290/01C",											0,			0,					0,		64*1024,	1024,	0x10000300,	UUENCODE	},
+	
 		// the following are from UM10211, LPC23xx User manual, Rev. 4.1 -- 5 September 2012
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID				name															sectors							banks	main ram	size	address
