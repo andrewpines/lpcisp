@@ -414,11 +414,11 @@ const partinfo_t
 		// the following are from UM10120, LPC2131/2/4/6/8 User manual, Rev. 4 -- 23 April 2012
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID				name															sectors							banks	main ram	size	address
-		{	{0x0002ff01,	~0			},	~0,	"LPC2131/LPC2131/01",											8,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE	},
-		{	{0x0002ff11,	~0			},	~0,	"LPC2132/LPC2132/01",											9,			sectorMapLpc23xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x0002ff12,	~0			},	~0,	"LPC2134/LPC2134/01",											11,			sectorMapLpc23xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x0002ff23,	~0			},	~0,	"LPC2136/LPC2136/01",											15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE	},
-		{	{0x0002ff25,	~0			},	~0,	"LPC2138/LPC2138/01",											27,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE	},
+		{	{0x0002ff01,	~0			},	~0,	"LPC2131/LPC2131/01",											8,			sectorMapLpc23xx,	1,		8*1024,		1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x0002ff11,	~0			},	~0,	"LPC2132/LPC2132/01",											9,			sectorMapLpc23xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x0002ff12,	~0			},	~0,	"LPC2134/LPC2134/01",											11,			sectorMapLpc23xx,	1,		16*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x0002ff23,	~0			},	~0,	"LPC2136/LPC2136/01",											15,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
+		{	{0x0002ff25,	~0			},	~0,	"LPC2138/LPC2138/01",											27,			sectorMapLpc23xx,	1,		32*1024,	1024,	0x40000200,	UUENCODE|VECT_REMAP64	},
 
 		// the following are from UM10114, LPC21xx and LPC22xx User manual, Rev. 4 -- 2 May 2012 @@@ these need to be tested (check line termination)
 		//																										# of							flash				block	block RAM
