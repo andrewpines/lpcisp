@@ -62,6 +62,8 @@
 		corrected usage instructions for -isp
 		added support for LPC154x, LPC151x, LPC175x, and LPC176x (via Todd Squires)
 		added flag for skipping first 256 bytes when verifying parts which re-map the bootloader into vector space in ISP mode (previously only support 64 bytes)
+	  0.0.23 -- 20 December 2017
+	    added support for LPC21xx and LPC22xx parts
 
 	to do:
 		add support for lots more parts
