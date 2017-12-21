@@ -15,21 +15,29 @@ current complete list of options invoke the program with no arguments.
 Please note:
         1) on exit the target is reset.  If reset isn't mapped the GO command is invoked to
         	attempt to jump to address 0x00000000.
-        2) the set of supported devices is incomplete.  Adding more parts is simply a matter
-                of adding lines to the list.  See partdesc.c.  As this is recently developed
-                this list is incomplete and may be inaccurate.  Please forward changes and
-                additions via:
+        2) the set of supported devices is incomplete and some may be inaccurate.  Adding
+                more parts is simply a matter of adding lines to the list.  See partdesc.c.
+                Please forward changes and additions via:
                    https://github.com/andrewpines/lpcisp/issues
+        3) some devices are more finicky about the oscillator setting and baud rate than
+                others.  if it has trouble communicating try reducing the baud rate.
+        4) some devices (LPC2134, for instance) don't seem to communicate correctly unless
+                the echo option is enabled.  The transfer is much faster with echo off, so
+                it's off by default.  If the device identifies correctly but fails to
+                acknowledge the transfer of blocks of data try enabling echo.
 
 Supporting documentation:
         AN11229, UUencoding for UART ISP, Rev. 1 -- 22 June 2012
+        UM10114, LPC21xx and LPC22xx User manual, Rev. 4 -- 2 May 2012
+        UM10120, LPC2131/2/4/6/8 User manual, Rev. 4 -- 23 April 2012
         UM10211, LPC23xx User manual, Rev. 4.1 -- 5 September 2012
-        UM10360, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014
+        UM10360, LPC176x/5x User manual, Rev. 4. 1 -- 19 December 2016
         UM10375, LPC1311/13/42/43 User manual, Rev. 5 -- 21 June 2012
         UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013
         UM10430, LPC18xx User manual, Rev. 2.8 -- 10 December 2015
         UM10470, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014
         UM10601, LPC800 User Manaual, Rev. 1.3, 22 July 2013
+        UM10736, LPC15xx User manual, Rev. 1.1 -- 3 March 2014
 
 ================================================
 
@@ -38,12 +46,14 @@ OPTIONS
 Following is a list of the available options:
 
 -reset ctrl     map the reset function to a serial device signal.  ctrl may be
-                one of dtr, ndtr, rts, or nrts.  lpcisp will assert (or negate)
-                the selected signal to reset the target.  Default is none.
+                one of dtr, ndtr, rts, or nrts.  lpcisp will assert (dtr, rts)
+                or negate (ndtr, nrts) the selected signal to reset the target.
+                Default is none.
 
 -isp ctrl       map the ISP function to a serial device signal.  ctrl may be
-                one of dtr, ndtr, rts, or nrts.  lpcisp will assert (or negate)
-                the selected signal to invoke ISP on the target.  Default is none.
+                one of dtr, ndtr, rts, or nrts.  lpcisp will assert (dtr, rts)
+                or negate (ndtr, nrts) the selected signal to invoke ISP on the
+                target.  Default is none.
 
 -hold           if invoked the ISP signal will be held through the programming
                 sequence.  this is for systems where the signal is used to take

@@ -376,12 +376,6 @@ const partinfo_t
 		{	{0x3D01402B,	~0			},	~0,	"LPC1342F[HN33|BD48]",											4,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE|HAS_UID	},
 		{	{0x3D00002B,	~0			},	~0,	"LPC1343F[HN33|BD48]",											8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
 
-		// the following are from UM10360,	~0, LPC176x/5x User manual, Rev. 3.1 -- 2 April 2014.
-		//																										# of							flash				block	block RAM
-		//		id			alt. ID				name															sectors							banks	ram			size	address
-		{	{0x25001118,	0x25001110	},	~0,	"LPC1751FBD80",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	0			},
-		{	{0x25001121,	~0			},	~0,	"LPC1752FBD80",													16,			sectorMap4k,		1,		16384,		1024,	0x10000300,	0			},
-
 		// the following are from UM10470,	~0, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014.
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID				name															sectors							banks	main ram	size	address
