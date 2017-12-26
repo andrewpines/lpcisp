@@ -64,6 +64,8 @@
 		added flag for skipping first 256 bytes when verifying parts which re-map the bootloader into vector space in ISP mode (previously only support 64 bytes)
 	  0.0.23 -- 20 December 2017
 	    added support for LPC21xx and LPC22xx parts
+	  0.0.24 -- 26 December 2017
+	    added support for LPC822/LPC824 parts
 
 	to do:
 		add support for lots more parts

@@ -52,6 +52,22 @@ static const sectormap_t
 		{	0,		0x00003400,	0x400,	},
 		{	0,		0x00003800,	0x400,	},
 		{	0,		0x00003c00,	0x400,	},
+		{	0,		0x00004000,	0x400,	},
+		{	0,		0x00004400,	0x400,	},
+		{	0,		0x00004800,	0x400,	},
+		{	0,		0x00004c00,	0x400,	},
+		{	0,		0x00005000,	0x400,	},
+		{	0,		0x00005400,	0x400,	},
+		{	0,		0x00005800,	0x400,	},
+		{	0,		0x00005c00,	0x400,	},
+		{	0,		0x00006000,	0x400,	},
+		{	0,		0x00006400,	0x400,	},
+		{	0,		0x00006800,	0x400,	},
+		{	0,		0x00006c00,	0x400,	},
+		{	0,		0x00007000,	0x400,	},
+		{	0,		0x00007400,	0x400,	},
+		{	0,		0x00007800,	0x400,	},
+		{	0,		0x00007c00,	0x400,	},
 	},
 	sectorMap4k[]=
 	{
@@ -325,6 +341,15 @@ const partinfo_t
 		{	{ 0x00008120,	~0			},	~0,	"LPC812M101JDH16",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
 		{	{ 0x00008121,	~0			},	~0,	"LPC812M101JD20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
 		{	{ 0x00008122,	~0			},	~0,	"LPC812M101JDH20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
+
+		// the following are from UM10800, LPC82x User manual, Rev. 1.2, 5 October 2016.
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name															sectors							banks	ram			size	address		flags
+		{	{ 0x00008221,	~0			},	~0,	"LPC822M101JHI33",												16,			sectorMap1k,		1,		4*1024,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008222,	~0			},	~0,	"LPC822M101JDH20",												16,			sectorMap1k,		1,		4*1024,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008241,	~0			},	~0,	"LPC824M201JHI33",												32,			sectorMap1k,		1,		8*1024,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008242,	~0			},	~0,	"LPC824M201JDH20",												32,			sectorMap1k,		1,		8*1024,		1024,	0x10000300,	TERM_CRLF	},
+
 
 		// the following are from UM10398, LPC111x/LPC11Cxx User manual, Rev. 12.1, August 2013.
 		//																										# of							flash				block	block RAM
