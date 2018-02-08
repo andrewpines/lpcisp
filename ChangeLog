@@ -66,9 +66,16 @@
 	    added support for LPC21xx and LPC22xx parts
 	  0.0.24 -- 26 December 2017
 	    added support for LPC822/LPC824 parts
+	  0.0.25 -- 7 February 2018
+	    added support for LPC546xx parts
+	    corrected display of dumps which don't end on 16-byte boundary
+	    added SKIP_0 flag for parts (e.g., LPC546xx) which can't read word 0 from flash
+	    ensured hex file start address and number of bytes to read from flash are on word boundaries (multiple of 4 bytes)
+	    added support for extended address segment records in intel hex files
 
 	to do:
 		add support for lots more parts
 		allow write to start on non-page boundaries
 		enable XON/OFF handshaking where appropriate
 		consider including memmap register in part description structure of parts which have it, write 1 before verifying to allow access to full user flash space
+			(this only works if device doesn't use interrupts in ISP code, need to verify that)

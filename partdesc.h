@@ -37,11 +37,12 @@ typedef struct
 }partinfo_t;
 
 // b0   = 1 if data is uuencoded, 0 if not
-// b2:1 = expected line termination
+// b2:1 = expected line termination (00=any, 01=CR, 10=LF, 11=CRLF)
 // b3   = 1 if device has a UID, 0 if not
 // b4   = 1 if device remaps the first 64 bytes (vectors) in ISP mode
 // b5   = 1 if device remaps the first 256 bytes (vectors) in ISP mode
- 
+// b6   = 1 if device cannot read the first word of flash (LPC546xx, possibly others)
+
 #define UUENCODE		(1<<0)	// set if part expects data to be uuencoded and checksummed
 #define TERM_ANY		(0<<1)	// default, no flags set
 #define TERM_CR			(1<<1)
@@ -51,6 +52,7 @@ typedef struct
 #define HAS_UID			(1<<3)	// device has a UID, supports UID command
 #define VECT_REMAP64	(1<<4)	// set true if device remaps the first 64 bytes (vectors) in ISP mode, thus making that section un-verifiable
 #define VECT_REMAP256	(1<<5)	// set true if device remaps the first 256 bytes (vectors) in ISP mode, thus making that section un-verifiable
+#define SKIP_0			(1<<6)	// when reading skip first work of flash
 
 void ReportPartInfo(int level,partinfo_t *p);
 int GetPartInfo(int fd,partinfo_t *p);

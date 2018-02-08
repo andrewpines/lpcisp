@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.24";
+	*version="0.0.25";
 
 static int
 	fd,
@@ -457,6 +457,11 @@ int main(int argc,char *argv[])
 						ReportString(REPORT_ERROR,"unknown option \"%s\"\n",*argv);
 					}
 				}
+				if(!fail&&(start&0x03))
+				{
+					ReportString(REPORT_ERROR,"start address (0x%08x) must be on a word boundary (multiple of four)\n",start);
+					fail=1;
+				}
 			}
 			else
 			{
@@ -564,34 +569,45 @@ int main(int argc,char *argv[])
 						{
 							unsigned int
 								addr,
-								s;
+								off;
 							
-							s=0;
+							off=0;
+							if((partInfo.flags&SKIP_0)&&(start==0))
+							{
+								// device can't read word 0 in flash, skip over it
+								length-=4;
+								start=4;
+								off=4;
+							}
 							if((partInfo.flags&VECT_REMAP64)&&(start<64))
 							{
 								// device remaps vector table in ISP mode, so we can't verify that section
-								s=64;
+								length-=(64-start);
+								start=64;
+								off=64;
 							}
 							else if((partInfo.flags&VECT_REMAP256)&&(start<256))
 							{
 								// device remaps vector table in ISP mode, so we can't verify that section
-								s=256;
+								length-=(256-start);
+								start=256;
+								off=256;
 							}
 							ReportString(REPORT_INFO,"verifying... 0x%08x",start);
 							for(addr=start;!fail&&(addr<start+length);addr+=256)
 							{
-								fail=(ReadFromTarget(fd,buffer,addr,256,&partInfo)<=0);
+								// read remaining bytes, up to 256 (must be multiple of four)
+								fail=(ReadFromTarget(fd,buffer,addr,MIN((length-(addr-start)+3)&~3,256),&partInfo)<=0);
 								if(!fail)
 								{
-									for(i=s;!fail&&(i<MIN(length-(addr-start),256));i++)
+									for(i=0;!fail&&(i<MIN((length-(addr-start)+3)&~3,256));i++)
 									{
-										fail=buffer[i]!=data[addr-start+i];
+										fail=buffer[i]!=data[off+addr-start+i];
 										if(fail)
 										{
-											ReportString(REPORT_INFO," -- mismatch at 0x%08x, is 0x%02x, should be 0x%02x\n",addr+i,buffer[i],data[addr-start+i]);;
+											ReportString(REPORT_INFO," -- mismatch at 0x%08x, is 0x%02x, should be 0x%02x\n",addr+i,buffer[i],data[off+addr-start+i]);;
 										}
 									}
-									s=0;
 								}
 								if(!fail)
 								{
@@ -625,14 +641,21 @@ int main(int argc,char *argv[])
 									}
 									for(j=0;j<lineLen;j++)
 									{
-										ReportString(REPORT_MINIMUM,"%02x ",(unsigned char)data[i+j]);
+										if((i+j)<dumpLength)
+										{
+											ReportString(REPORT_MINIMUM,"%02x ",(unsigned char)data[i+j]);
+										}
+										else
+										{
+											ReportString(REPORT_MINIMUM,"   ");
+										}
 									}
 									ReportString(REPORT_MINIMUM," - ");
 									for(j=0;j<16-lineLen;j++)
 									{
 										ReportString(REPORT_MINIMUM," ");
 									}
-									for(j=0;j<lineLen;j++)
+									for(j=0;(j<lineLen)&&((i+j)<dumpLength);j++)
 									{
 										ReportString(REPORT_MINIMUM,"%c",(data[i+j]>' '&&data[i+j]<='~')?data[i+j]:'.');
 									}

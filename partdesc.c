@@ -111,6 +111,27 @@ static const sectormap_t
 		{	0,		0x0001c000,	0x2000,	},
 		{	0,		0x0001e000,	0x2000,	},
 	},
+	sectorMap32k[]=
+	{
+		// 32kB uniform sector map
+		//	bank	base		size
+		{	0,		0x00000000,	0x8000,	},
+		{	0,		0x00008000,	0x8000,	},
+		{	0,		0x00010000,	0x8000,	},
+		{	0,		0x00018000,	0x8000,	},
+		{	0,		0x00020000,	0x8000,	},
+		{	0,		0x00028000,	0x8000,	},
+		{	0,		0x00030000,	0x8000,	},
+		{	0,		0x00038000,	0x8000,	},
+		{	0,		0x00040000,	0x8000,	},
+		{	0,		0x00048000,	0x8000,	},
+		{	0,		0x00050000,	0x8000,	},
+		{	0,		0x00058000,	0x8000,	},
+		{	0,		0x00060000,	0x8000,	},
+		{	0,		0x00068000,	0x8000,	},
+		{	0,		0x00070000,	0x8000,	},
+		{	0,		0x00078000,	0x8000,	},
+	},
 	sectorMapLpc17xx[]=
 	{
 		// LPC17xx non-uniform sector map
@@ -507,6 +528,21 @@ const partinfo_t
 		{	{0x00001519,	~0			},	0x00,	"LPC1519",													64,			sectorMap4k,		1,		36*1024,	1024,	0x02000200,	TERM_CRLF			},
 		{	{0x00001518,	~0			},	0x00,	"LPC1518",													32,			sectorMap4k,		1,		20*1024,	1024,	0x02000200,	TERM_CRLF			},
 		{	{0x00001517,	~0			},	0x00,	"LPC1517",													16,			sectorMap4k,		1,		12*1024,	1024,	0x02000200,	TERM_CRLF			},
+
+		// the following are from UM10912, LPC546xx User manual, Rev. 1.9 -- 16 June 2017
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID			word1	name														sectors							banks	main ram	size	address
+		{	{0x7f954605,	~0			},	~0,		"LPC54605J256ET180",										8,			sectorMap32k,		1,		136*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0xfff54605,	~0			},	~0,		"LPC54605J512ET180",										16,			sectorMap32k,		1,		200*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0x7f954606,	~0			},	~0,		"LPC54606J256[ET100|BD100|ET180]",							8,			sectorMap32k,		1,		136*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0xfff54606,	~0			},	~0,		"LPC54606J512[ET100|BD100|BD208]",							16,			sectorMap32k,		1,		200*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0x7f954607,	~0			},	~0,		"LPC54607J256[ET180|BD208]",								8,			sectorMap32k,		1,		136*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0xfff54607,	~0			},	~0,		"LPC54607J512ET180",										16,			sectorMap32k,		1,		200*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0xfff54608,	~0			},	~0,		"LPC54608J512[ET180|BD208]",								16,			sectorMap32k,		1,		200*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0xfff54616,	~0			},	~0,		"LPC54616J512[ET100|BD100|BD208]",							16,			sectorMap32k,		1,		200*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0x7f954616,	~0			},	~0,		"LPC54616J256ET180",										8,			sectorMap32k,		1,		136*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0xfff54618,	~0			},	~0,		"LPC54618J512[ET180|BD208]",								16,			sectorMap32k,		1,		200*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
+		{	{0xfff54628,	~0			},	~0,		"LPC54628J512ET180",										16,			sectorMap32k,		1,		200*1024,	1024,	0x20000200,	TERM_CRLF|HAS_UID|SKIP_0	},
 	},
 	partDefUnknown=
 	{
