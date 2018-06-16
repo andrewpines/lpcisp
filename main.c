@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.25";
+	*version="0.0.26";
 
 static int
 	fd,
@@ -277,6 +277,18 @@ static int HexFileOpt(int *argc, char ***argv)
 	return(-1);
 }
 
+static int StartOpt(int *argc, char ***argv)
+{
+	if(*argc)
+	{
+		start=strtol(**argv,NULL,0);
+		*argc=(*argc)-1;
+		*argv=(*argv)+1;
+		return(0);
+	}
+	return(-1);
+}
+
 static int BinFileOpt(int *argc, char ***argv)
 {
 	FILE *
@@ -354,6 +366,7 @@ static token_t
 		{	"-retry",		RetryOpt,		" num             set number of retries when synchronizing (default=25)"												},
 		{	"-bin",			BinFileOpt,		" filename          specify name of binary file to load"																},
 		{	"-hex",			HexFileOpt,		" filename          specify name of hex file to load"																	},
+		{	"-start",		StartOpt,		" address         override start address (specify AFTER hex or binary file)"											},
 		{	"-erase",		EraseOpt,		"                 erase target device"																					},
 		{	"-echo",		EchoOpt,		"                  enable echo from target (default is no echo)"														},
 		{	"-vector",		VectorOpt,		"                patch vector 7 to 2's complement of the sum of vectors 0 through 6 regardless of address of image"		},

@@ -72,6 +72,8 @@
 	    added SKIP_0 flag for parts (e.g., LPC546xx) which can't read word 0 from flash
 	    ensured hex file start address and number of bytes to read from flash are on word boundaries (multiple of 4 bytes)
 	    added support for extended address segment records in intel hex files
+	  0.0.26 -- 15 June, 2018
+	    added -start command line option to allow loading file at different address than passed in hex file or 0 for binary files
 
 	to do:
 		add support for lots more parts
