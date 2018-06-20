@@ -23,6 +23,7 @@ static int
 	vector,
 	burn,
 	erase,
+	eraseall,
 	verify,
 	term;
 
@@ -76,6 +77,13 @@ static int WriteOpt(int *argc, char ***argv)
 static int EraseOpt(int *argc, char ***argv)
 {
 	erase=1;
+	return(0);
+}
+
+static int EraseAllOpt(int *argc, char ***argv)
+{
+	erase=1;
+	eraseall=1;
 	return(0);
 }
 
@@ -367,7 +375,8 @@ static token_t
 		{	"-bin",			BinFileOpt,		" filename          specify name of binary file to load"																},
 		{	"-hex",			HexFileOpt,		" filename          specify name of hex file to load"																	},
 		{	"-start",		StartOpt,		" address         override start address (specify AFTER hex or binary file)"											},
-		{	"-erase",		EraseOpt,		"                 erase target device"																					},
+		{	"-erase",		EraseOpt,		"                 erase required sectors on target device (may fail if code is read-protected)"						},
+		{	"-eraseall",	EraseAllOpt,	"              erase all sectors on target device"																},
 		{	"-echo",		EchoOpt,		"                  enable echo from target (default is no echo)"														},
 		{	"-vector",		VectorOpt,		"                patch vector 7 to 2's complement of the sum of vectors 0 through 6 regardless of address of image"		},
 		{	"-write",		WriteOpt,		"                 write image to target device"																			},
@@ -430,6 +439,7 @@ int main(int argc,char *argv[])
 		ConfigureISPHold(0);
 		SetReportLevel(REPORT_INFO);
 		erase=0;
+		eraseall=0;
 		echo=0;
 		vector=0;
 		burn=0;
@@ -547,7 +557,27 @@ int main(int argc,char *argv[])
 				{
 					if(erase)
 					{
-						fail=(Erase(fd,0,partInfo.numSectors-1,0,&partInfo)!=1);	// @@@ only support one bank for now
+						int
+							startSector,
+							endSector;
+
+						if(eraseall||(length==0))
+						{
+							// asked to erase all or no file provided, erase all sectors
+							startSector=0;
+							endSector=partInfo.numSectors-1;
+						}
+						else
+						{
+							// find sectors which contain start address and end address
+							startSector=GetSectorAddr(start,&partInfo);
+							endSector=GetSectorAddr(start+length,&partInfo);
+						}
+						fail=((startSector<0)||(endSector<0));
+						if(!fail)
+						{
+							fail=(Erase(fd,startSector,endSector,0,&partInfo)!=1);	// @@@ only support bank zero for now
+						}
 						if(fail)
 						{
 							ReportString(REPORT_ERROR,"failed to erase device\n");
