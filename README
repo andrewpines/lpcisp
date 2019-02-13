@@ -91,7 +91,12 @@ Following is a list of the available options:
                 but the beginning of the image is the vector table then this option
                 will force the patching of vector 7 at the beginning of the image.
 
--erase          erase the target device (all sectors).
+-erase          erase required sectors on target device (i.e., any sectors which
+                coincide with the data about to be written).  Note that this may fail
+                if the device is read-protected since it may not erase the sector
+                with the code read protect word.
+
+-eraseall       erase the target device (all sectors).
 
 -echo           enable command echo (disabled by default).
 
@@ -154,7 +159,7 @@ EXAMPLES
 
         Erase
                 To erase the device from the previous example the command would be:
-                  lpcisp -reset ndtr -isp nrts -erase /dev/ttyS0
+                  lpcisp -reset ndtr -isp nrts -eraseall /dev/ttyS0
 
 
         Write
@@ -191,4 +196,3 @@ EXAMPLES
                 -tbaud option.  The terminal can be entered without other operations.  The
                 command would be:
                   lpcisp -reset ndtr -isp nrts -tbaud 9600 -term /dev/ttyS0
-

@@ -74,6 +74,8 @@
 	    added support for extended address segment records in intel hex files
 	  0.0.26 -- 15 June, 2018
 	    added -start command line option to allow loading file at different address than passed in hex file or 0 for binary files
+	  0.0.27 -- 13 February, 2019
+	    added support for Windows
 
 	to do:
 		add support for lots more parts

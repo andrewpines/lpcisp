@@ -1,6 +1,12 @@
 
 #include "includes.h"
 
+static char
+	resetCode='\033',		// if this character is encountered from the keyboard, reset the target (ESC)
+	exitCode='\030';		// if this character is encountered from the keyboard, exit (ctrl-x)
+
+#if defined __UNIX__
+
 #define TTYIN	0
 #define TTYOUT	1
 
@@ -9,10 +15,6 @@
 
 static int
 	done;
-
-static char
-	resetCode='\033',		// if this character is encountered from the keyboard, reset the target (ESC)
-	exitCode='\030';		// if this character is encountered from the keyboard, exit (ctrl-x)
 
 static void ReadDevice(int fd,int theTTY)
 // read the serial device, send characters to the tty
@@ -132,3 +134,47 @@ int Terminal(int fd)
 	}
 	return(0);
 }
+
+#elif defined __WIN__	// Windows
+int Terminal(int fd)
+{
+	int
+		i,
+		numRead,
+		c;
+	unsigned char
+		buf[256];
+
+	ReportString(REPORT_INFO,"entered terminal mode.  type <ctrl-X> to exit, <ESC> to reset the target\n");
+	do
+	{
+		// if one or more characters come in from serial port display to console
+		numRead=ReadBytes(fd,buf,256,0);
+		if(numRead>0)
+		{
+			write(1,buf,numRead);
+			fflush(stdout);
+		}
+		// read character from stdin, send to serial device
+		if(kbhit())
+		{
+			c=getch();
+			if(c==resetCode)
+			{
+				// reset the target, if able
+				if(ResetTarget(fd)>=0)
+				{
+					ReportString(REPORT_INFO,"\n   resetting target...\n");
+				}
+			}
+			else if(c>=0)
+			{
+				buf[0]=c;
+				WriteBytes(fd,buf,1);
+			}
+		}
+	}while(c!=exitCode);
+	ReportString(REPORT_INFO,"\n   exiting terminal...\n");
+	return(1);
+}
+#endif

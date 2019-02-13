@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.26";
+	*version="0.0.27";
 
 static int
 	fd,
@@ -423,7 +423,11 @@ int main(int argc,char *argv[])
 		cs;
 
 	fail=0;
+#if defined __UNIX__
 	progName=basename(*argv);
+#else
+	progName=*argv;
+#endif
 	argc--;
 	argv++;
 	if(argc)

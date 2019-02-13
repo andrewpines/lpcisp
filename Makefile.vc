@@ -1,0 +1,68 @@
+#
+#	  lpcisp
+#
+#  Use this Makefile for Windows-based systems
+#
+# invoke as:
+#   nmake /C /F Makefile.vc clean
+#   nmake /C /F Makefile.vc
+#
+
+all:      lpcisp.exe
+
+CC = cl /nologo
+
+CFLAGS = -D__WIN__
+
+OBJS =				\
+	main.obj		\
+	asyncserial.obj	\
+	uuencode.obj	\
+	ihex.obj		\
+	partdesc.obj	\
+	report.obj		\
+	isp.obj			\
+	term.obj
+
+HEADERS =			\
+	asyncserial.h	\
+	defines.h		\
+	ihex.h			\
+	includes.h		\
+	isp.h			\
+	main.h			\
+	partdesc.h		\
+	report.h		\
+	term.h			\
+	uuencode.h
+
+main.obj: main.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) main.c
+
+asyncserial.obj: asyncserial.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) asyncserial.c
+
+uuencode.obj: uuencode.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) uuencode.c
+
+ihex.obj: ihex.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) ihex.c
+
+partdesc.obj: partdesc.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) partdesc.c
+
+report.obj: report.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) report.c
+
+isp.obj: isp.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) isp.c
+
+term.obj: term.c $(HEADERS)
+	@$(CC) -c $(CFLAGS) term.c
+
+lpcisp.exe: $(OBJS)
+	@$(CC) /Felpcisp.exe $(OBJS) winmm.lib
+
+clean:
+    @del /Q $(OBJS) lpcisp.exe vc*.pdb
+

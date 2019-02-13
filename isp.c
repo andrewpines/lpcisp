@@ -7,7 +7,7 @@
 #include "includes.h"
 
 // @@@ consider allowing this to be set from command line
-#define RESPONSE_TIMEOUT	1000000		// in ms, fail if no response from device within this time
+#define RESPONSE_TIMEOUT	1000000		// in us, fail if no response from device within this time
 
 static int
 	resetPin,
@@ -466,7 +466,7 @@ void EnterISPMode(int fd, int hold)
 // enter the ISP mode.  Drive RESET and ISP low, then release RESET.
 // if hold is true then leave ISP asserted on exit.
 {
-	ReportString(REPORT_DEBUG_PROCESS,"entering ISP mode\n");
+	ReportString(REPORT_DEBUG_PROCESS,"\nentering ISP mode\n");
 
 	// echo is enabled by default, re-enable here since the part is being reset
 	echo=1;
@@ -676,14 +676,14 @@ int BlankCheck(int fd, int startSector, int endSector)
 			case 0:
 				// executed okay but returned an error, handle it
 				ReportString(REPORT_ERROR,"blank check: %s\n",GetErrorString(buffer));
-				if(atoi(buffer)==RTN_SECTOR_NOT_BLANK)
+				if(strtol(buffer,NULL,10)==RTN_SECTOR_NOT_BLANK)
 				{
 					if(ReadString(fd,buffer))
 					{
-						addr=atoi(buffer);
+						addr=strtol(buffer,NULL,10);
 						if(ReadString(fd,buffer))
 						{
-							value=atoi(buffer);
+							value=strtol(buffer,NULL,10);
 							ReportString(REPORT_ERROR,"  0x%08x: 0x%08x\n",addr,value);
 						}
 					}
@@ -716,12 +716,12 @@ unsigned int ReadPartID(int fd, unsigned int *id1)
 			// success
 			if(ReadString(fd,buffer))
 			{
-				id=atoi(buffer);
+				id=strtoll(buffer,NULL,10);
 				if(id)
 				{
 					if(ReadString(fd,buffer))
 					{
-						*id1=atoi(buffer);
+						*id1=strtoll(buffer,NULL,10);
 					}
 					return(id);
 				}
@@ -791,10 +791,10 @@ int ReadBootCode(int fd, unsigned char *major, unsigned char *minor)
 			// success
 			if(ReadString(fd,buffer))
 			{
-				*major=atoi(buffer);
+				*major=strtol(buffer,NULL,10);
 				if(ReadString(fd,buffer))
 				{
-					*minor=atoi(buffer);
+					*minor=strtol(buffer,NULL,10);
 					return(0);
 				}
 			}
@@ -881,7 +881,7 @@ int ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int 
 						{
 							if(ReadString(fd,buffer))
 							{
-								if(cs==atoi(buffer))
+								if(cs==strtol(buffer,NULL,10))
 								{
 									SendCommandNoResponse(fd,"OK");
 									ReportString(REPORT_DEBUG_PROCESS,"checksum okay\n");

@@ -171,6 +171,32 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *baseAd
 	return(buffer);
 }
 
+#ifdef __WIN__
+int getline(char **linep, int *linecapp, FILE *fp)
+// reduced function getline to support what we need since Windows doesn't provide getline.
+// not a full implementation.  Assumes line buffer was allocated and is large enough.
+{
+	int
+		n,
+		c;
+	char
+		*p;
+	
+	p=*linep;
+	n=0;
+	do
+	{
+		c=fgetc(fp);
+		*p++=c;
+		*p='\0';
+		n++;
+	}while((c!='\n')&&(c>=0)&&(n<*linecapp));
+	n--;
+	*--p='\0';
+	return(n);
+}
+#endif
+
 unsigned char *ReadHexFile(const char *fileName,int *baseAddr,int *length)
 // read hex file into buffer, return pointer to buffer or NULL if error.
 // caller must free returned buffer.
@@ -196,6 +222,7 @@ unsigned char *ReadHexFile(const char *fileName,int *baseAddr,int *length)
 	fp=fopen(fileName,"r");
 	if(fp)
 	{
+fprintf(stderr,"opened %s\n",fileName);
 		size=1024;
 		if((buffer=(unsigned char *)malloc(size)))
 		{
@@ -208,6 +235,7 @@ unsigned char *ReadHexFile(const char *fileName,int *baseAddr,int *length)
 				*baseAddr=-1;
 				*length=0;
 				eof=0;
+sprintf(line,"TEST");
 				while(!eof && buffer && (getline(&line,&n,fp)>0))
 				{
 					// place the contents of the line into the buffer

@@ -1,6 +1,7 @@
 
 #include "includes.h"
 
+#if defined __UNIX__
 
 #ifdef __OSX__
 #include <IOKit/serial/ioss.h>
@@ -178,7 +179,7 @@ int ChangeBaudRate(int fd, int baud)
 
 int OpenDevice(char *name)
 // open the device that we are going to communicate through
-// set it to the passed baud rate, raw mode
+// set it to 115200 baud, raw mode
 // return descriptor number on success, -1 on error
 {
 	int
@@ -216,9 +217,187 @@ int OpenDevice(char *name)
 	return(-1);
 }
 
-
 void CloseDevice(int fd)
 // close the device that was opened by OpenDevice
-{
+{	
 	close(fd);
 }
+
+#elif defined __WIN__
+
+// Windows returns a handle, rather than an int (file descriptor number).  To be compatible with the
+// rest of the code, which was written for Unix, we keep an array of handles and return an int index
+// into this list.
+
+#define MAX_DEVICES		16		// in this application we never use more than one
+
+static HANDLE
+	handles[MAX_DEVICES];
+static int
+	handlesInUse[MAX_DEVICES];
+
+static int SetReadTimeout(int fd, unsigned int timeOut)
+// set read timeout in us.  return true on succes, false on error.
+{
+	COMMTIMEOUTS
+		commtimeouts;
+	
+	if(timeOut)
+	{
+		commtimeouts.ReadTotalTimeoutMultiplier=timeOut/1000;
+		commtimeouts.ReadIntervalTimeout=10;
+		commtimeouts.ReadTotalTimeoutConstant=0;
+	}
+	else
+	{
+		commtimeouts.ReadTotalTimeoutMultiplier=MAXDWORD;
+		commtimeouts.ReadIntervalTimeout=MAXDWORD;
+		commtimeouts.ReadTotalTimeoutConstant=1;
+	}
+	commtimeouts.WriteTotalTimeoutMultiplier=0;
+	commtimeouts.WriteTotalTimeoutConstant=0;
+	return(SetCommTimeouts(handles[fd],&commtimeouts));
+}
+
+
+int ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeOut)
+// Attempt to read the given number of bytes before timeout (uS) occurs during any read attempt.
+// Return the number of bytes received or -1 on error.  if maxBytes is zero will simply return zero.
+//  fd -- file descriptor of serial device
+//  buf -- pointer to buffer to be filled
+//  maxBytes -- max number of bytes to read
+//  timeout -- time to wait on any read, in microseconds
+{
+	unsigned long
+		numRead;
+
+	numRead=0;		
+	if((fd<MAX_DEVICES)&&(handlesInUse[fd]))
+	{
+		SetReadTimeout(fd,timeOut);
+		if(ReadFile(handles[fd],buf,maxBytes,&numRead,NULL))
+		{
+			return((int)numRead);
+		}
+		printf("timeout\n");
+	}
+	return(-1);
+}
+
+unsigned int WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes)
+// Write bytes to device.  return number of bytes written (should be same as numBytes unless error).
+//  fd -- file descriptor
+//  buf -- pointer to buffer to be sent
+//  numBytes -- number of bytes to send
+{
+	unsigned long
+		numWritten;
+
+	numWritten=0;
+	if((fd<MAX_DEVICES)&&(handlesInUse[fd]))
+	{
+		WriteFile(handles[fd],buf,numBytes,&numWritten,NULL);
+	}
+	return((int)numWritten);
+}
+
+void SERIAL_SetDTR(int fd, int state)
+// Set the state of the DTR handshake line
+{
+	if((fd<MAX_DEVICES)&&(handlesInUse[fd]))
+	{
+		EscapeCommFunction(handles[fd],state?SETDTR:CLRDTR);
+	}
+}
+
+void SERIAL_SetRTS(int fd, int state)
+// Set the state of the RTS handshake line
+{
+	if((fd<MAX_DEVICES)&&(handlesInUse[fd]))
+	{
+		EscapeCommFunction(handles[fd],state?SETRTS:CLRRTS);
+	}
+}
+
+int ChangeBaudRate(int fd, int baud)
+// change baud rate on selected device.  return 0 on success or -1 if
+// fd is out of range, not open, or failed to set baud rate.
+{
+	DCB
+		dcbSerialParams;
+
+	// ensure device is in range and open
+	if((fd<MAX_DEVICES)&&(handlesInUse[fd]))
+	{
+		// get configuration
+   		if(GetCommState(handles[fd],&dcbSerialParams))
+   		{
+   			// change baud, write back
+    		dcbSerialParams.BaudRate = baud;
+			if(SetCommState(handles[fd],&dcbSerialParams))
+			{
+				return(0);
+			}
+		}
+	}
+	return(-1);
+}
+
+int OpenDevice(char *name)
+// open the device that we are going to communicate through
+// set it to 115200 baud, raw mode
+// return descriptor number on success, -1 on error
+{
+	int
+		fd;
+	DCB
+		dcbSerialParams;
+	
+	// search for unused handle
+	for(fd=0;fd<MAX_DEVICES;fd++)
+	{
+		if(!handlesInUse[fd])
+		{
+			handles[fd]=CreateFile(name,GENERIC_READ|GENERIC_WRITE,0,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+			if(handles[fd]!=INVALID_HANDLE_VALUE)
+			{
+				// set baud rate to 115200, line settings to 8 data, 1 stop, no parity.
+    			if(GetCommState(handles[fd],&dcbSerialParams))
+    			{
+    				dcbSerialParams.BaudRate		= 115200;
+    				dcbSerialParams.ByteSize		= 8;
+    				dcbSerialParams.StopBits		= ONESTOPBIT;
+    				dcbSerialParams.Parity			= NOPARITY;
+    				dcbSerialParams.fDtrControl		= DTR_CONTROL_DISABLE;
+    				dcbSerialParams.fOutX			= TRUE;
+    				dcbSerialParams.fInX			= TRUE;
+    				dcbSerialParams.fNull			= FALSE;
+    				dcbSerialParams.fRtsControl		= RTS_CONTROL_DISABLE;
+    				dcbSerialParams.fOutxCtsFlow	= FALSE;
+    				dcbSerialParams.fOutxDsrFlow	= FALSE;
+					if(SetCommState(handles[fd],&dcbSerialParams))
+					{
+						if(SetReadTimeout(fd,1000000))
+						{
+							// done, flag that this handle is in use and return the index
+							handlesInUse[fd]=1;
+							return(fd);
+						}
+					}
+				}
+				// failed, close the device
+			    CloseHandle(handles[fd]);
+			}
+		}
+	}
+	return(-1);
+}
+
+void CloseDevice(int fd)
+// close the device that was opened by OpenDevice, mark that the handle is free.
+{
+    CloseHandle(handles[fd]);
+	handlesInUse[fd]=0;
+}
+
+#endif

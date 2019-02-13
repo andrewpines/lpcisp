@@ -37,7 +37,7 @@ const char *GetErrorString(const char *s)
 	static char
 		string[256];
 
-	code=atoi(s);
+	code=strtol(s,NULL,10);
 	if(code<=ARRAY_SIZE(errorCodes))
 	{
 		return(errorCodes[code]);

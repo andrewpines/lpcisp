@@ -1,4 +1,10 @@
 
+#ifdef __WIN__
+// Windows' Sleep() function is in milliseconds, divide by 1000 to go from microseconds to milliseconds.  Accurate
+// enough for our purposes.
+#define usleep(x) Sleep((x)/1000)
+#endif
+
 #define RTN_CMD_SUCCESS								0
 #define RTN_INVALID_COMMAND							1
 #define RTN_SRC_ADDR_ERROR							2

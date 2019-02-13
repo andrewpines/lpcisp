@@ -1,12 +1,18 @@
 #
 #	  lpcisp
 #
+#  Use this Makefile for Unix-based systems
+#
+#  invoke as:
+#    make clean
+#    make
+#
 
 APP=lpcisp
 
 .PHONY:	install
 
-CFLAGS=-O2 -Wall
+CFLAGS=-O2 -Wall -D__UNIX__
 
 ifeq ($(OSTYPE),)
 OSTYPE		= $(shell uname)
@@ -35,5 +41,4 @@ clean :
 	@rm -f *.o $(APP)
 
 install:
-	cp $(APP) /usr/local/bin/.
-	
+	@cp $(APP) /usr/local/bin/.
