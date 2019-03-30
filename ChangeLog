@@ -76,6 +76,8 @@
 	    added -start command line option to allow loading file at different address than passed in hex file or 0 for binary files
 	  0.0.27 -- 13 February, 2019
 	    added support for Windows
+	  0.0.28 -- 30 March, 2019
+	    added FlushDevice() command, flush serial port after asserting reset and before communicating with target.
 
 	to do:
 		add support for lots more parts

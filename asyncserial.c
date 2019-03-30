@@ -177,6 +177,15 @@ int ChangeBaudRate(int fd, int baud)
 	return(-1);
 }
 
+void FlushDevice(int fd)
+// flush the serial device.
+{
+	if(fd>=0)
+	{
+		tcflush(fd,TCIOFLUSH);
+	}
+}
+
 int OpenDevice(char *name)
 // open the device that we are going to communicate through
 // set it to 115200 baud, raw mode
@@ -341,6 +350,15 @@ int ChangeBaudRate(int fd, int baud)
 		}
 	}
 	return(-1);
+}
+
+void FlushDevice(int fd)
+// flush the serial device.
+{
+	if(fd>=0)
+	{
+		PurgeComm(handles[fd],PURGE_RXABORT|PURGE_RXCLEAR|PURGE_TXABORT|PURGE_TXCLEAR);
+	}
 }
 
 int OpenDevice(char *name)

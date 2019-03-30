@@ -2,6 +2,7 @@ int ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeO
 unsigned int WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes);
 void SERIAL_SetDTR(int fd, int state);
 void SERIAL_SetRTS(int fd, int state);
+void FlushDevice(int fd);
 int OpenDevice(char *name);
 void CloseDevice(int fd);
 int ChangeBaudRate(int fd, int baud);

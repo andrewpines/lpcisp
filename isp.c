@@ -1159,6 +1159,9 @@ int Sync(int fd, int freq,int retries)
 		// enter ISP mode (drive ISP low, toggle reset low then high, if possible)
 		EnterISPMode(fd,ispHold);
 
+		// ensure no spurious received characters between open and now are pending from the target
+		FlushDevice(fd);
+
 		// send autobaud character ('?')
 		WriteChar(fd,'?');
 		if(ReadString(fd,buffer))
