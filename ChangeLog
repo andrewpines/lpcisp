@@ -78,6 +78,8 @@
 	    added support for Windows
 	  0.0.28 -- 30 March, 2019
 	    added FlushDevice() command, flush serial port after asserting reset and before communicating with target.
+	  0.0.29 -- 12 September, 2019
+	    added support for LPC1124 and LPC1125
 
 	to do:
 		add support for lots more parts

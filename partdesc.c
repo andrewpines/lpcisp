@@ -462,6 +462,13 @@ const partinfo_t
 		{	{ 0x1431102b,	~0			},	~0,	"LPC11C22FBD48/301",											4,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
 		{	{ 0x1430102b,	~0			},	~0,	"LPC11C24FBD48/301",											8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
 
+		// the following are from UM10839, LPC112x User manual, Rev. 1.0, 12 February 2015
+		//																										# of							flash				block	block RAM
+		//		id			alt. ID				name															sectors							banks	ram			size	address
+		{	{ 0x00140040,	~0			},	~0,	"LPC1124JBD48/303",												8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{ 0x00150080,	~0			},	~0,	"LPC1125JBD48/303",												16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+
+
 		// the following are from UM10518, LPC11Exx User manual, Rev. 3.5, 21 December 2016.
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID				name															sectors							banks	ram			size	address
