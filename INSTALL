@@ -4,8 +4,8 @@ Building on Unix-based systems (Linux, OSX) should be as simple as:
 	make
 	make install
 
-You may need root permissions to install; it simply copies the
-executable to /usr/local/bin.
+You may need root permissions to install (e.g., "sudo make install");
+it simply copies the executable to /usr/local/bin.
 
 To build on Windows (Visual Studio Build Tools):
 	nmake /C /F Makefile.vc clean

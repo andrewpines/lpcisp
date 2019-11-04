@@ -38,7 +38,7 @@ $(APP) : $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(APP)
 
 clean :
-	@rm -f *.o $(APP)
+	@rm -f *.o *.obj $(APP) $(APP).exe
 
 install:
 	@cp $(APP) /usr/local/bin/.

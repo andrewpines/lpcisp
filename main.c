@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.29";
+	*version="0.0.30";
 
 static int
 	fd,
@@ -375,8 +375,8 @@ static token_t
 		{	"-bin",			BinFileOpt,		" filename          specify name of binary file to load"																},
 		{	"-hex",			HexFileOpt,		" filename          specify name of hex file to load"																	},
 		{	"-start",		StartOpt,		" address         override start address (specify AFTER hex or binary file)"											},
-		{	"-erase",		EraseOpt,		"                 erase required sectors on target device (may fail if code is read-protected)"						},
-		{	"-eraseall",	EraseAllOpt,	"              erase all sectors on target device"																},
+		{	"-erasemin",	EraseOpt,		"              erase only required sectors on target device (may fail if code is read-protected)"						},
+		{	"-erase",		EraseAllOpt,	"                 erase all sectors on target device"																	},
 		{	"-echo",		EchoOpt,		"                  enable echo from target (default is no echo)"														},
 		{	"-vector",		VectorOpt,		"                patch vector 7 to 2's complement of the sum of vectors 0 through 6 regardless of address of image"		},
 		{	"-write",		WriteOpt,		"                 write image to target device"																			},
