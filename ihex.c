@@ -222,7 +222,6 @@ unsigned char *ReadHexFile(const char *fileName,int *baseAddr,int *length)
 	fp=fopen(fileName,"r");
 	if(fp)
 	{
-fprintf(stderr,"opened %s\n",fileName);
 		size=1024;
 		if((buffer=(unsigned char *)malloc(size)))
 		{
@@ -235,7 +234,6 @@ fprintf(stderr,"opened %s\n",fileName);
 				*baseAddr=-1;
 				*length=0;
 				eof=0;
-sprintf(line,"TEST");
 				while(!eof && buffer && (getline(&line,&n,fp)>0))
 				{
 					// place the contents of the line into the buffer
@@ -255,9 +253,6 @@ sprintf(line,"TEST");
 			}
 		}
 		fclose(fp);
-printf("base address: 0x%08x\n",*baseAddr);
-printf("image length: 0x%08x\n",*length);
-printf("buffer size: 0x%08x\n",size);
 	}
 	else
 	{
