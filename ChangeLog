@@ -83,8 +83,11 @@
 	  0.0.30 -- 4 November 2019
 	    change "erase" and "eraseall" to "erasemin" and "erase", respectively.  "erasemin" erases only the sectors which are affected by the
 	      incoming hex file, "erase" bulk erases the entire device.
-	  0.0.31 -- 
+	  0.0.31 -- 20 January, 2020
 	    altered code in isp.c to suppress spurious warnings from gcc 8.3.0
+	    added bank support for flash erase and write
+	    added "-device" option to allow operations on a specific device rather than whatever is detected (default)
+	    corrected name of LPC1114[FHN33/301|FHN33/302|FHI33/302|FBD48/302|FBD100/302] in part list
 
 	to do:
 		add support for lots more parts
