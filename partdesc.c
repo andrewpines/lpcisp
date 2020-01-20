@@ -450,7 +450,7 @@ const partinfo_t
 		{	{ 0x0444502b,	~0			},	~0,	"LPC1114FHN33/201",												8,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
 		{	{ 0x2540902b,	~0			},	~0,	"LPC1114FHN33/[201|202]",										8,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
 		{	{ 0x0444102b,	~0			},	~0,	"LPC1114[FHN33|FBD48]/301",										8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
-		{	{ 0x2540102b,	~0			},	~0,	"LPC1114F[FHN33/301|FHN33/302|FHI33/302|FBD48/302|FBD100/302]",	8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
+		{	{ 0x2540102b,	~0			},	~0,	"LPC1114[FHN33/301|FHN33/302|FHI33/302|FBD48/302|FBD100/302]",	8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
 		{	{ 0x00040040,	~0			},	~0,	"LPC1114[FBD48|FHN33]/303",										8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
 		{	{ 0x00040042,	~0			},	~0,	"LPC1114FHN33/203",												8,			sectorMap4k,		1,		4096,		1024,	0x10000300,	UUENCODE	},
 		{	{ 0x00040060,	~0			},	~0,	"LPC1114FBD48/323",												12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE	},
