@@ -80,6 +80,11 @@
 	    added FlushDevice() command, flush serial port after asserting reset and before communicating with target.
 	  0.0.29 -- 12 September, 2019
 	    added support for LPC1124 and LPC1125
+	  0.0.30 -- 4 November 2019
+	    change "erase" and "eraseall" to "erasemin" and "erase", respectively.  "erasemin" erases only the sectors which are affected by the
+	      incoming hex file, "erase" bulk erases the entire device.
+	  0.0.31 -- 
+	    altered code in isp.c to suppress spurious warnings from gcc 8.3.0
 
 	to do:
 		add support for lots more parts

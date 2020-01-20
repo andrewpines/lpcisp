@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.30";
+	*version="0.0.31";
 
 static int
 	fd,
@@ -34,7 +34,8 @@ static partinfo_t
 	partInfo;
 
 static char
-	*fileName;
+	*fileName,
+	*deviceName;
 
 static long
 	dumpAddr,
@@ -106,6 +107,20 @@ typedef struct
 	int
 		code;
 }pin_t;
+
+static int DeviceOpt(int *argc, char ***argv)
+// using the next argument, set the target device
+{
+	if(*argc)
+	{
+		deviceName=**argv;
+		*argv=(*argv)+1;
+		*argc=(*argc)-1;
+		return(0);
+	}
+	return(-1);
+	
+}
 
 static int GetCtrlArg(const char *arg)
 {
@@ -365,6 +380,7 @@ static token_t
 	tokenList[]=
 	{
 			// token name	function		help string
+		{	"-device",		DeviceOpt,		" devicename     specify an LPC device.  default is to attempt to program whatever is attached."						},
 		{	"-reset",		ResetOpt,		" ctrl            map reset to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
 		{	"-isp",			ISPOpt,			" ctrl              map ISP to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
 		{	"-hold",		HoldOpt,		"                  assert ISP through programming sequence (default is to negate at initialization)"					},
@@ -402,6 +418,25 @@ static void Usage(const char *progName)
 	{
 		ReportString(REPORT_ERROR,"  %s%s\n",tokenList[i].token,tokenList[i].helpStr);
 	}
+}
+
+static int MatchDeviceName(char *targetName, const char *detectedName)
+// compare requested device name to detected device, return TRUE if targetName is undefined or names match, FALSE if not.
+// note: name must match the name from the partDef array in partdesc.c.  at some point it might be nice to make the
+// match more flexible, so, for instance, "LPC1111FHN33/101" should match "LPC1111FHN33/[101|102]".
+{
+	int
+		i;
+
+	if(targetName)
+	{
+		for(i=0;i<strlen(targetName);i++)
+		{
+			// convert to upper case to make comparison case-insensitive
+			targetName[i]=toupper(targetName[i]);
+		}
+	}
+	return(!targetName||(strcmp(targetName,detectedName)==0));
 }
 
 
@@ -453,6 +488,7 @@ int main(int argc,char *argv[])
 		length=0;
 		dumpAddr=-1;
 		dumpLength=-1;
+		deviceName=(char *)NULL;
 		data=(unsigned char *)NULL;
 
 		// parse command line arguments
@@ -516,12 +552,20 @@ int main(int argc,char *argv[])
 									fail=(GetPartInfo(fd,&partInfo)<0);
 									if(!fail)
 									{
-										SetLineTermination(partInfo.flags&TERM_MASK);
-										ReportPartInfo(REPORT_INFO,&partInfo);
-										if(partInfo.numSectors)
+										fail=!MatchDeviceName(deviceName,partInfo.name);
+										if(!fail)
 										{
-											// only unlock device if it was identified
-											Unlock(fd);
+											SetLineTermination(partInfo.flags&TERM_MASK);
+											ReportPartInfo(REPORT_INFO,&partInfo);
+											if(partInfo.numSectors)
+											{
+												// only unlock device if it was identified
+												Unlock(fd);
+											}
+										}
+										else
+										{
+											ReportString(REPORT_ERROR,"part mismatch, wanted \"%s\", detected \"%s\"\n",deviceName,partInfo.name);
 										}
 									}
 									else
