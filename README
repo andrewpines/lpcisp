@@ -47,6 +47,13 @@ OPTIONS
 
 Following is a list of the available options:
 
+-device name    specify an LPC device name (e.g., "LPC1311FHN33").  the name
+                must exactly match one of the names listed by "lpcisp -parts".
+                lpcisp will stop if the name specified does not match the name
+                implied by the part ID code read from the device.  if no name
+                is specified then no check is made and lpcisp will attempt to
+                perform the specified operations on whatever device is detected.
+
 -reset ctrl     map the reset function to a serial device signal.  ctrl may be
                 one of dtr, ndtr, rts, or nrts.  lpcisp will assert (dtr, rts)
                 or negate (ndtr, nrts) the selected signal to reset the target.
