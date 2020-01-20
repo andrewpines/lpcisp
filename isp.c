@@ -566,10 +566,15 @@ static int PrepareSectorsForWrite(int fd, int startSector, int endSector, int ba
 
 	if(startSector<=endSector)
 	{
-		sprintf(buffer,"P %d %d",startSector,endSector);
 		if(partInfo->numBanks>1)
 		{
-			sprintf(buffer,"%s %d",buffer,bank);
+			// if part has more than one bank include the bank number
+			sprintf(buffer,"P %d %d %d",startSector,endSector,bank);
+		}
+		else
+		{
+			// otherwise use just the start and end sector
+			sprintf(buffer,"P %d %d",startSector,endSector);
 		}
 		switch(SendCommand(fd,buffer,buffer,"0"))
 		{
@@ -629,12 +634,17 @@ int Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo
 
 	if(startSector<=endSector)
 	{
-		if(PrepareSectorsForWrite(fd,startSector,endSector,0,partInfo))	// @@@ only support bank 0 for now
+		if(PrepareSectorsForWrite(fd,startSector,endSector,0,partInfo)) 
 		{
-			sprintf(buffer,"E %d %d",startSector,endSector);
 			if(partInfo->numBanks>1)
 			{
-				sprintf(buffer,"%s %d",buffer,bank);
+				// if device has more than one bank include the bank arguemtn
+				sprintf(buffer,"E %d %d %d",startSector,endSector,bank);
+			}
+			else
+			{
+				// else use just the start and end sector
+				sprintf(buffer,"E %d %d",startSector,endSector);
 			}
 			switch(SendCommand(fd,buffer,buffer,"0"))
 			{
