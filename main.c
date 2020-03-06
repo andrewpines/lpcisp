@@ -691,7 +691,7 @@ int main(int argc,char *argv[])
 								fail=(ReadFromTarget(fd,buffer,addr,MIN((length-(addr-start)+3)&~3,256),&partInfo)<=0);
 								if(!fail)
 								{
-									for(i=0;!fail&&(i<MIN((length-(addr-start)+3)&~3,256));i++)
+									for(i=0;!fail&&(i<MIN(length-(addr-start),256));i++)
 									{
 										fail=buffer[i]!=data[off+addr-start+i];
 										if(fail)
