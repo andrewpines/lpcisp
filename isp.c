@@ -801,10 +801,10 @@ int ReadBootCode(int fd, unsigned char *major, unsigned char *minor)
 			// success
 			if(ReadString(fd,buffer))
 			{
-				*major=strtol(buffer,NULL,10);
+				*minor=strtol(buffer,NULL,10);
 				if(ReadString(fd,buffer))
 				{
-					*minor=strtol(buffer,NULL,10);
+					*major=strtol(buffer,NULL,10);
 					return(0);
 				}
 			}

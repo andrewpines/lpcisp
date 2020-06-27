@@ -90,6 +90,8 @@
 	    corrected name of LPC1114[FHN33/301|FHN33/302|FHI33/302|FBD48/302|FBD100/302] in part list
 	  0.0.32 -- 6 March 2020
 	    corrected bug which caused verify to operate on word instead of byte boundaries
+	  0.0.33 -- 27 June 2020
+	    swapped major and minor boot version (were reversed)
 
 	to do:
 		add support for lots more parts
