@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.0.33";
+	*version="0.1.0";
 
 static int
 	fd,
@@ -20,6 +20,9 @@ static int
 	start,
 	length,
 	echo,
+	hold,
+	resetPin,
+	ispPin,
 	vector,
 	burn,
 	erase,
@@ -154,7 +157,7 @@ static int ResetOpt(int *argc, char ***argv)
 	{
 		if((pin=GetCtrlArg(**argv))>=0)
 		{
-			ConfigureResetPin(pin);
+			resetPin=pin;
 			*argv=(*argv)+1;
 			*argc=(*argc)-1;
 			return(0);
@@ -173,7 +176,7 @@ static int ISPOpt(int *argc, char ***argv)
 	{
 		if((pin=GetCtrlArg(**argv))>=0)
 		{
-			ConfigureISPPin(pin);
+			ispPin=pin;
 			*argv=(*argv)+1;
 			*argc=(*argc)-1;
 			return(0);
@@ -184,7 +187,7 @@ static int ISPOpt(int *argc, char ***argv)
 
 static int HoldOpt(int *argc, char ***argv)
 {
-	ConfigureISPHold(1);
+	hold=1;
 	return(0);
 }
 
@@ -288,7 +291,7 @@ static int HexFileOpt(int *argc, char ***argv)
 
 		// read in a hex file
 		fileName=**argv;
-		data=ReadHexFile(**argv,&start,&length);
+		data=LPCISP_ReadHexFile(**argv,&start,&length);
 		if(data)
 		{
 			ReportFileInfo(REPORT_INFO);
@@ -408,7 +411,7 @@ static void Usage(const char *progName)
 	int
 		i;
 
-	ReportString(REPORT_ERROR,"%s: ver. %s (c) 2015, 2016 Cosmodog, Ltd.\n",progName,version);
+	ReportString(REPORT_ERROR,"%s: ver. %s (c) 2015-2020 Cosmodog, Ltd.\n",progName,version);
 	ReportString(REPORT_ERROR,"usage:\n");
 	ReportString(REPORT_ERROR,"  %s [options] device\n",progName);
 	ReportString(REPORT_ERROR,"where\n");
@@ -439,9 +442,7 @@ static int MatchDeviceName(char *targetName, const char *detectedName)
 	return(!targetName||(strcmp(targetName,detectedName)==0));
 }
 
-
 //========== main ==========
-
 int main(int argc,char *argv[])
 {
 	int
@@ -456,6 +457,16 @@ int main(int argc,char *argv[])
 	unsigned int
 		*vect,
 		cs;
+	const char
+		*errString[]=
+		{
+			"Success",
+			"Failed to set baud rate",
+			"Failed to sync with target",
+			"Communication error",
+			"Failed to get device info from target",
+			"Unknown LPC device",
+		};
 
 	fail=0;
 #if defined __UNIX__
@@ -473,9 +484,9 @@ int main(int argc,char *argv[])
 		tbaud=115200;
 		clock=12000;
 		retries=25;
-		ConfigureResetPin(PIN_NONE);
-		ConfigureISPPin(PIN_NONE);
-		ConfigureISPHold(0);
+		resetPin=PIN_NONE;
+		ispPin=PIN_NONE;
+		hold=0;
 		SetReportLevel(REPORT_INFO);
 		erase=0;
 		eraseall=0;
@@ -492,106 +503,73 @@ int main(int argc,char *argv[])
 		data=(unsigned char *)NULL;
 
 		// parse command line arguments
-		while(!fail&&argc)
+		while(!fail&&argc&&(*argv[0]=='-'))
 		{
-			if(*argv[0]=='-')
+			// option, process it
+			for(i=0;i<ARRAY_SIZE(tokenList);i++)
 			{
-				// option, process it
-				for(i=0;i<ARRAY_SIZE(tokenList);i++)
+				if(strcmp(tokenList[i].token,*argv)==0)
 				{
-					if(strcmp(tokenList[i].token,*argv)==0)
-					{
-						// skip over the token and call the function which may then consume more arguments.
-						argc--;
-						argv++;
-						fail=(tokenList[i].funct(&argc,&argv)<0);
-						if(fail)
-						{
-							ReportString(REPORT_ERROR,"invalid arguments\n");
-						}
-						break;
-					}
-				}
-				if(!fail)
-				{
-					fail=(i==ARRAY_SIZE(tokenList));
+					// skip over the token and call the function which may then consume more arguments.
+					argc--;
+					argv++;
+					fail=(tokenList[i].funct(&argc,&argv)<0);
 					if(fail)
 					{
-						ReportString(REPORT_ERROR,"unknown option \"%s\"\n",*argv);
+						ReportString(REPORT_ERROR,"invalid arguments\n");
 					}
-				}
-				if(!fail&&(start&0x03))
-				{
-					ReportString(REPORT_ERROR,"start address (0x%08x) must be on a word boundary (multiple of four)\n",start);
-					fail=1;
+					break;
 				}
 			}
-			else
+			if(!fail)
 			{
-				// expect a device name (e.g., /dev/ttyS0).  open it and try to communicate with
-				// a target device and retrieve device information.
-				fail=(fd>=0);
-				if(!fail)
+				fail=(i==ARRAY_SIZE(tokenList));
+				if(fail)
 				{
-					fd=OpenDevice(*argv);
-					fail=(fd<0);
+					ReportString(REPORT_ERROR,"unknown option \"%s\"\n",*argv);
+				}
+			}
+			if(!fail&&(start&0x03))
+			{
+				ReportString(REPORT_ERROR,"start address (0x%08x) must be on a word boundary (multiple of four)\n",start);
+				fail=1;
+			}
+		}
+
+		if(!fail&&argc)
+		{
+			// expect a device name (e.g., /dev/ttyS0) as the last argument.  open it and try to communicate with
+			// a target device and retrieve device information.
+			fd=LPCISP_SERIAL_OpenDevice(*argv);
+			fail=(fd<0);
+			if(!fail)
+			{
+				// if term was the only action requested skip the synchronization step and drop directly to terminal
+				if(erase||data||(dumpLength>0)||!term)
+				{
+					fail=LPCISP_Sync(fd,baud,clock,retries,echo,hold,resetPin,ispPin,&partInfo);
 					if(!fail)
 					{
-						// if term was the only action requested skip the synchronization step and drop directly to terminal
-						if(erase||data||(dumpLength>0)||!term)
+						// NULL deviceName matches anything
+						fail=!MatchDeviceName(deviceName,partInfo.name);
+						if(!fail)
 						{
-							fail=(ChangeBaudRate(fd,baud)<0);
-							if(!fail)
-							{
-								// until we know what kind of device this is use default termination (accept CR, LF, or CRLF)
-								SetLineTermination(TERM_ANY);
-								fail=!Sync(fd,clock*1000,retries);
-								if(!fail)
-								{
-									Echo(fd,echo);
-									fail=(GetPartInfo(fd,&partInfo)<0);
-									if(!fail)
-									{
-										fail=!MatchDeviceName(deviceName,partInfo.name);
-										if(!fail)
-										{
-											SetLineTermination(partInfo.flags&TERM_MASK);
-											ReportPartInfo(REPORT_INFO,&partInfo);
-											if(partInfo.numSectors)
-											{
-												// only unlock device if it was identified
-												Unlock(fd);
-											}
-										}
-										else
-										{
-											ReportString(REPORT_ERROR,"part mismatch, wanted \"%s\", detected \"%s\"\n",deviceName,partInfo.name);
-										}
-									}
-									else
-									{
-										ReportString(REPORT_ERROR,"failed to identify part\n");
-									}
-								}
-								else
-								{
-									ReportString(REPORT_ERROR,"failed to detect target device on \"%s\" at %d baud\n",*argv,baud);
-								}
-							}
+							ReportPartInfo(REPORT_INFO,&partInfo);
+						}
+						else
+						{
+							ReportString(REPORT_ERROR,"part mismatch, wanted \"%s\", detected \"%s\"\n",deviceName,partInfo.name);
 						}
 					}
 					else
 					{
-						ReportString(REPORT_ERROR,"failed to open \"%s\"\n",*argv);
+						ReportString(REPORT_ERROR,"failed: %s\n",errString[fail]);
 					}
-					argc--;
-					argv++;
 				}
-				else
-				{
-					// one was already opened, close it and fail
-					CloseDevice(fd);
-				}
+			}
+			else
+			{
+				ReportString(REPORT_ERROR,"failed to open \"%s\"\n",*argv);
 			}
 		}
 
@@ -618,13 +596,13 @@ int main(int argc,char *argv[])
 						else
 						{
 							// find sectors which contain start address and end address
-							startSector=GetSectorAddr(start,&partInfo);
-							endSector=GetSectorAddr(start+length,&partInfo);
+							startSector=LPCISP_GetSectorAddr(start,&partInfo);
+							endSector=LPCISP_GetSectorAddr(start+length,&partInfo);
 						}
 						fail=((startSector<0)||(endSector<0));
 						if(!fail)
 						{
-							fail=(Erase(fd,startSector,endSector,0,&partInfo)!=1);	// @@@ only support bank zero for now
+							fail=(LPCISP_Erase(fd,startSector,endSector,0,&partInfo)<0);	// @@@ only support bank zero for now
 						}
 						if(fail)
 						{
@@ -651,7 +629,7 @@ int main(int argc,char *argv[])
 						// write image to flash
 						if(burn)
 						{
-							fail=!WriteToFlash(fd,data,start,length,&partInfo);
+							fail=(LPCISP_WriteToFlash(fd,data,start,length,&partInfo)<0);
 							ReportString(REPORT_INFO,"%s\n",!fail?"write complete":"failed to write\n");
 						}
 
@@ -688,7 +666,7 @@ int main(int argc,char *argv[])
 							for(addr=start;!fail&&(addr<start+length);addr+=256)
 							{
 								// read remaining bytes, up to 256 (must be multiple of four)
-								fail=(ReadFromTarget(fd,buffer,addr,MIN((length-(addr-start)+3)&~3,256),&partInfo)<=0);
+								fail=(LPCISP_ReadFromTarget(fd,buffer,addr,MIN((length-(addr-start)+3)&~3,256),&partInfo)<0);
 								if(!fail)
 								{
 									for(i=0;!fail&&(i<MIN(length-(addr-start),256));i++)
@@ -719,7 +697,7 @@ int main(int argc,char *argv[])
 							// dumpAddr and dumpLength must be word-aligned
 							dumpAddr&=~3;
 							dumpLength=(dumpLength+3)&~3;
-							fail=(ReadFromTarget(fd,data,dumpAddr,dumpLength,&partInfo)<=0);
+							fail=(LPCISP_ReadFromTarget(fd,data,dumpAddr,dumpLength,&partInfo)<=0);
 							if(!fail)
 							{
 								while(i<dumpLength)
@@ -764,14 +742,14 @@ int main(int argc,char *argv[])
 					ReportString(REPORT_ERROR,"ERROR: unknown part, cannot perform operations on it\n");
 				}
 			}
-			ExitISPMode(fd);
+			LPCISP_ExitISPMode(fd);
 
 			if(!fail&&term)
 			{
 				// go into terminal mode with current line settings
 				if(tbaud!=baud)
 				{
-					fail=(ChangeBaudRate(fd,tbaud)<0);
+					fail=(LPCISP_SERIAL_ChangeBaudRate(fd,tbaud)<0);
 				}
 				if(!fail)
 				{
@@ -779,7 +757,7 @@ int main(int argc,char *argv[])
 				}
 			}
 
-			CloseDevice(fd);
+			LPCISP_SERIAL_CloseDevice(fd);
 		}
 		if(fd<0)
 		{

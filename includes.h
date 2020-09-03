@@ -27,11 +27,10 @@
 
 // local headers
 #include "defines.h"
+#include "lpcisp.h"
 #include "asyncserial.h"
 #include "uuencode.h"
-#include "ihex.h"
 #include "partdesc.h"
 #include "report.h"
-#include "isp.h"
 #include "term.h"
 

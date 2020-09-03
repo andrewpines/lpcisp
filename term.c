@@ -63,7 +63,7 @@ static void WriteDevice(int theTTY,int fd)
 				if(buffer[idx]==resetCode)
 				{
 					// reset the target, if able
-					if(ResetTarget(fd)>=0)
+					if(LPCISP_ResetTarget(fd)>=0)
 					{
 						action=1;
 						ReportString(REPORT_INFO,"\n   resetting target...\n");
@@ -149,7 +149,7 @@ int Terminal(int fd)
 	do
 	{
 		// if one or more characters come in from serial port display to console
-		numRead=ReadBytes(fd,buf,256,0);
+		numRead=SERIAL_ReadBytes(fd,buf,256,0);
 		if(numRead>0)
 		{
 			write(1,buf,numRead);
@@ -162,7 +162,7 @@ int Terminal(int fd)
 			if(c==resetCode)
 			{
 				// reset the target, if able
-				if(ResetTarget(fd)>=0)
+				if(LPCISP_ResetTarget(fd)>=0)
 				{
 					ReportString(REPORT_INFO,"\n   resetting target...\n");
 				}
@@ -170,7 +170,7 @@ int Terminal(int fd)
 			else if(c>=0)
 			{
 				buf[0]=c;
-				WriteBytes(fd,buf,1);
+				SERIAL_WriteBytes(fd,buf,1);
 			}
 		}
 	}while(c!=exitCode);

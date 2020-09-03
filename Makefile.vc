@@ -1,7 +1,7 @@
 #
 #	  lpcisp
 #
-#  Use this Makefile for Windows-based systems
+#  Use this Makefile for Windows-based systems (see Makefile to build for Unix-based systems)
 #
 # invoke as:
 #   nmake /C /F Makefile.vc clean
@@ -30,7 +30,6 @@ HEADERS =			\
 	ihex.h			\
 	includes.h		\
 	isp.h			\
-	main.h			\
 	partdesc.h		\
 	report.h		\
 	term.h			\

@@ -30,7 +30,7 @@ static int SerialByteWaiting(int fd,unsigned int timeOut)
 	return(select(FD_SETSIZE,&readSet,NULL,NULL,&timeVal)==1);	// if our descriptor is ready, then report it
 }
 
-int ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeOut)
+int LPCISP_SERIAL_ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeOut)
 // Attempt to read the given number of bytes before timeout (uS) occurs during any read attempt.
 // Return the number of bytes received or -1 on error.  if maxBytes is zero will simply return zero.
 //  fd -- file descriptor of serial device
@@ -56,7 +56,7 @@ int ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeO
 	return(numRead>=0?readSoFar:numRead);
 }
 
-unsigned int WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes)
+unsigned int LPCISP_SERIAL_WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes)
 // Write bytes to device.  return number of bytes written (should be same as numBytes unless error).
 //  fd -- file descriptor
 //  buf -- pointer to buffer to be sent
@@ -65,7 +65,7 @@ unsigned int WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes)
 	return(write(fd,buf,numBytes));
 }
 
-void SERIAL_SetDTR(int fd, int state)
+void LPCISP_SERIAL_SetDTR(int fd, int state)
 // Set the state of the DTR handshake line
 {
 	int
@@ -83,7 +83,7 @@ void SERIAL_SetDTR(int fd, int state)
 	ioctl(fd,TIOCMSET,&flags);
 }
 
-void SERIAL_SetRTS(int fd, int state)
+void LPCISP_SERIAL_SetRTS(int fd, int state)
 // Set the state of the RTS handshake line
 {
 	int
@@ -144,7 +144,7 @@ static int GetBaudCode(unsigned int baud)
 	return(-1);
 }
 
-int ChangeBaudRate(int fd, int baud)
+int LPCISP_SERIAL_ChangeBaudRate(int fd, int baud)
 {
 	struct termios
 		terminalParams;			// parameters for the serial port
@@ -177,7 +177,7 @@ int ChangeBaudRate(int fd, int baud)
 	return(-1);
 }
 
-void FlushDevice(int fd)
+void LPCISP_SERIAL_FlushDevice(int fd)
 // flush the serial device.
 {
 	if(fd>=0)
@@ -186,7 +186,7 @@ void FlushDevice(int fd)
 	}
 }
 
-int OpenDevice(char *name)
+int LPCISP_SERIAL_OpenDevice(char *name)
 // open the device that we are going to communicate through
 // set it to 115200 baud, raw mode
 // return descriptor number on success, -1 on error
@@ -226,8 +226,8 @@ int OpenDevice(char *name)
 	return(-1);
 }
 
-void CloseDevice(int fd)
-// close the device that was opened by OpenDevice
+void LPCISP_SERIAL_CloseDevice(int fd)
+// close the device that was opened by LPCISP_SERIAL_OpenDevice
 {	
 	close(fd);
 }
@@ -246,7 +246,7 @@ static int
 	handlesInUse[MAX_DEVICES];
 
 static int SetReadTimeout(int fd, unsigned int timeOut)
-// set read timeout in us.  return true on succes, false on error.
+// Windows, set read timeout in us.  return true on succes, false on error.
 {
 	COMMTIMEOUTS
 		commtimeouts;
@@ -269,8 +269,8 @@ static int SetReadTimeout(int fd, unsigned int timeOut)
 }
 
 
-int ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeOut)
-// Attempt to read the given number of bytes before timeout (uS) occurs during any read attempt.
+int LPCISP_SERIAL_ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeOut)
+// Windows, Attempt to read the given number of bytes before timeout (uS) occurs during any read attempt.
 // Return the number of bytes received or -1 on error.  if maxBytes is zero will simply return zero.
 //  fd -- file descriptor of serial device
 //  buf -- pointer to buffer to be filled
@@ -293,8 +293,8 @@ int ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeO
 	return(-1);
 }
 
-unsigned int WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes)
-// Write bytes to device.  return number of bytes written (should be same as numBytes unless error).
+unsigned int LPCISP_SERIAL_WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes)
+// Windows, Write bytes to device.  return number of bytes written (should be same as numBytes unless error).
 //  fd -- file descriptor
 //  buf -- pointer to buffer to be sent
 //  numBytes -- number of bytes to send
@@ -310,8 +310,8 @@ unsigned int WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes)
 	return((int)numWritten);
 }
 
-void SERIAL_SetDTR(int fd, int state)
-// Set the state of the DTR handshake line
+void LPCISP_SERIAL_SetDTR(int fd, int state)
+// Windows, Set the state of the DTR handshake line
 {
 	if((fd<MAX_DEVICES)&&(handlesInUse[fd]))
 	{
@@ -319,8 +319,8 @@ void SERIAL_SetDTR(int fd, int state)
 	}
 }
 
-void SERIAL_SetRTS(int fd, int state)
-// Set the state of the RTS handshake line
+void LPCISP_SERIAL_SetRTS(int fd, int state)
+// Windows, Set the state of the RTS handshake line
 {
 	if((fd<MAX_DEVICES)&&(handlesInUse[fd]))
 	{
@@ -328,8 +328,8 @@ void SERIAL_SetRTS(int fd, int state)
 	}
 }
 
-int ChangeBaudRate(int fd, int baud)
-// change baud rate on selected device.  return 0 on success or -1 if
+int LPCISP_SERIAL_ChangeBaudRate(int fd, int baud)
+// Windows, change baud rate on selected device.  return 0 on success or -1 if
 // fd is out of range, not open, or failed to set baud rate.
 {
 	DCB
@@ -352,8 +352,8 @@ int ChangeBaudRate(int fd, int baud)
 	return(-1);
 }
 
-void FlushDevice(int fd)
-// flush the serial device.
+void LPCISP_SERIAL_FlushDevice(int fd)
+// Windows, flush the serial device.
 {
 	if(fd>=0)
 	{
@@ -361,8 +361,8 @@ void FlushDevice(int fd)
 	}
 }
 
-int OpenDevice(char *name)
-// open the device that we are going to communicate through
+int LPCISP_SERIAL_OpenDevice(char *name)
+// Windows, open the device that we are going to communicate through
 // set it to 115200 baud, raw mode
 // return descriptor number on success, -1 on error
 {
@@ -411,8 +411,8 @@ int OpenDevice(char *name)
 	return(-1);
 }
 
-void CloseDevice(int fd)
-// close the device that was opened by OpenDevice, mark that the handle is free.
+void LPCISP_SERIAL_CloseDevice(int fd)
+// Windows, close the device that was opened by LPCISP_SERIAL_OpenDevice, mark that the handle is free.
 {
     CloseHandle(handles[fd]);
 	handlesInUse[fd]=0;

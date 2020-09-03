@@ -115,6 +115,7 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *baseAd
 						}
 						else
 						{
+							ReportString(REPORT_ERROR,"failed to reallocate buffer to %d bytes\n",*size);
 							fail=1;
 						}
 					}
@@ -172,7 +173,7 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *baseAd
 }
 
 #ifdef __WIN__
-int getline(char **linep, int *linecapp, FILE *fp)
+static int getline(char **linep, int *linecapp, FILE *fp)
 // reduced function getline to support what we need since Windows doesn't provide getline.
 // not a full implementation.  Assumes line buffer was allocated and is large enough.
 {
@@ -197,7 +198,7 @@ int getline(char **linep, int *linecapp, FILE *fp)
 }
 #endif
 
-unsigned char *ReadHexFile(const char *fileName,int *baseAddr,int *length)
+unsigned char *LPCISP_ReadHexFile(const char *fileName,int *baseAddr,int *length)
 // read hex file into buffer, return pointer to buffer or NULL if error.
 // caller must free returned buffer.
 //   fileName: name of hex file to load

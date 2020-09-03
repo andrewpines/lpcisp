@@ -638,7 +638,7 @@ void DumpPartList(FILE *fp)
 	}
 }
 
-int GetSectorAddr(unsigned int addr, partinfo_t *p)
+int LPCISP_GetSectorAddr(unsigned int addr, partinfo_t *p)
 // given an address locate the number of the sector containing
 // that address or -1 if out of range (address off end of device)
 // or sector map undefined.
@@ -718,7 +718,7 @@ int GetPartInfo(int fd,partinfo_t *p)
 
 	found=0;
 	memcpy(p,&partDefUnknown,sizeof(partinfo_t));
-	id=ReadPartID(fd,&id1);
+	id=LPCISP_ReadPartID(fd,&id1);
 	p->id[0]=id;
 	p->id1=id1;
 	p->idIdx=0;
@@ -739,9 +739,9 @@ int GetPartInfo(int fd,partinfo_t *p)
 		if(found&&(p->flags&HAS_UID))
 		{
 			// if device identified and it supports UID
-			ReadPartUID(fd,p->uid);
+			LPCISP_ReadPartUID(fd,p->uid);
 		}
-		ReadBootCode(fd,&p->bootMajor,&p->bootMinor);
+		LPCISP_ReadBootCodeVersion(fd,&p->bootMajor,&p->bootMinor);
 		return(0);
 	}
 	return(-1);

@@ -12,8 +12,7 @@
 static int
 	resetPin,
 	ispPin,
-	echo=1,		// true when sent characters are expected to echo back, false when not (echo disabled by command to device)
-	ispHold;	// true to hold ISP asserted through programming sequence
+	echo;		// true when sent characters are expected to echo back, false when not (echo disabled by command to device)
 
 static unsigned char
 	lineTermination=TERM_ANY;
@@ -46,7 +45,7 @@ static int WriteString(int fd, const char *string)
 
 	// get length, write to device, return true if wrote all bytes
 	len=strlen(string);
-	return(WriteBytes(fd,(unsigned char *)string,len)==len);
+	return(LPCISP_SERIAL_WriteBytes(fd,(unsigned char *)string,len)==len);
 }
 
 static int WriteBuffer(int fd, const unsigned char *buffer, unsigned int len)
@@ -57,7 +56,7 @@ static int WriteBuffer(int fd, const unsigned char *buffer, unsigned int len)
 	ReportBufferCtrl(REPORT_DEBUG_FULL,buffer,len);
 
 	// write to device, return true if wrote all bytes
-	return(WriteBytes(fd,(unsigned char *)buffer,len)==len);
+	return(LPCISP_SERIAL_WriteBytes(fd,(unsigned char *)buffer,len)==len);
 }
 
 static int WriteChar(int fd, char c)
@@ -69,7 +68,7 @@ static int WriteChar(int fd, char c)
 	ReportChar(REPORT_DEBUG_FULL,'\n');
 
 	// write to device, return true if wrote the byte
-	return(WriteBytes(fd,(unsigned char *)&c,1)==1);
+	return(LPCISP_SERIAL_WriteBytes(fd,(unsigned char *)&c,1)==1);
 }
 
 static int ReadBuffer(int fd, unsigned char *buffer, unsigned int length)
@@ -85,7 +84,7 @@ static int ReadBuffer(int fd, unsigned char *buffer, unsigned int length)
 
 	i=0;
 	// read one character
-	while((i<length)&&(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1))
+	while((i<length)&&(LPCISP_SERIAL_ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1))
 	{
 		buffer[i++]=c;
 	}
@@ -99,12 +98,6 @@ static int ReadBuffer(int fd, unsigned char *buffer, unsigned int length)
 	return(i);
 }
 	
-void SetLineTermination(unsigned char t)
-// set line termination mode
-{
-	lineTermination=t;
-}
-
 static int ReadStringAny(int fd, char *string)
 // read a string from the device, return non-zero on success (complete string read),
 // zero on failure (didn't read complete string within timeout period).  stop on the
@@ -120,7 +113,7 @@ static int ReadStringAny(int fd, char *string)
 
 	i=0;
 	ReportString(REPORT_DEBUG_FULL,"<-- ");
-	while(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
+	while(LPCISP_SERIAL_ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
 	{
 		ReportCharCtrl(REPORT_DEBUG_FULL,c);
 		// if not first character or not carriage return or newline, add to buffer (throw away leading CRs and LFs)
@@ -159,7 +152,7 @@ static int ReadStringCRLF(int fd, char *string)
 	i=0;
 	t=0;
 	ReportString(REPORT_DEBUG_FULL,"<-- ");
-	while(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
+	while(LPCISP_SERIAL_ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
 	{
 		ReportCharCtrl(REPORT_DEBUG_FULL,c);
 		
@@ -209,7 +202,7 @@ static int ReadStringLF(int fd, char *string)
 
 	i=0;
 	ReportString(REPORT_DEBUG_FULL,"<-- ");
-	while(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
+	while(LPCISP_SERIAL_ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
 	{
 		ReportCharCtrl(REPORT_DEBUG_FULL,c);
 		// ignore all CRs
@@ -249,7 +242,7 @@ static int ReadStringCR(int fd, char *string)
 
 	i=0;
 	ReportString(REPORT_DEBUG_FULL,"<-- ");
-	while(ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
+	while(LPCISP_SERIAL_ReadBytes(fd,&c,1,RESPONSE_TIMEOUT)==1)
 	{
 		ReportCharCtrl(REPORT_DEBUG_FULL,c);
 		// ignore all LFs
@@ -298,19 +291,19 @@ static void SetControlPin(int fd, int pin, int state)
 	switch(pin)
 	{
 		case PIN_DTR:
-			SERIAL_SetDTR(fd,state);
+			LPCISP_SERIAL_SetDTR(fd,state);
 			ReportString(REPORT_DEBUG_PROCESS," (DTR=%d)\n",state);
 			break;
 		case PIN_nDTR:
-			SERIAL_SetDTR(fd,!state);
+			LPCISP_SERIAL_SetDTR(fd,!state);
 			ReportString(REPORT_DEBUG_PROCESS," (DTR=%d)\n",!state);
 			break;
 		case PIN_RTS:
-			SERIAL_SetRTS(fd,state);
+			LPCISP_SERIAL_SetRTS(fd,state);
 			ReportString(REPORT_DEBUG_PROCESS," (RTS=%d)\n",state);
 			break;
 		case PIN_nRTS:
-			SERIAL_SetRTS(fd,!state);
+			LPCISP_SERIAL_SetRTS(fd,!state);
 			ReportString(REPORT_DEBUG_PROCESS," (RTS=%d)\n",!state);
 			break;
 		default:
@@ -430,24 +423,111 @@ static int SendCommandNoResponse(int fd, char *command)
 	return(0);
 }
 
+static int Unlock(int fd)
+// unlock flash write/erase and go commands
+{
+	char
+		response[256];
+
+	if(SendCommand(fd,"U 23130",response,"0")>0)
+	{
+		ReportString(REPORT_DEBUG_PROCESS,"unlocked\n");
+		return(0);
+	}
+	ReportString(REPORT_DEBUG_PROCESS,"failed to unlock: %s\n",GetErrorString(response));
+	return(-1);
+}
+
+static int Echo(int fd, int state)
+// enable/disable serial echo
+{
+	char
+		response[256];
+
+	if(SendCommand(fd,state?"A 1":"A 0",response,"0")>=0)
+	{
+		ReportString(REPORT_DEBUG_PROCESS,"echo %s\n",state?"enabled":"disabled");
+		echo=state;
+		return(0);
+	}
+	return(-1);
+}
+
+static void EnterISPMode(int fd, int hold)
+// enter the ISP mode.  Drive RESET and ISP low, then release RESET.
+// if hold is true then leave ISP asserted on exit.
+{
+	ReportString(REPORT_DEBUG_PROCESS,"\nentering ISP mode\n");
+
+	// echo is enabled by default, re-enable here since the part is being reset
+	echo=1;
+
+	// set ISP low, toggle reset if pin is mapped
+	SetISP(fd,0);
+	LPCISP_ResetTarget(fd);
+	
+	// allow target processor to boot
+	usleep(100000);
+
+	// if not asked to hold ISP low, set it back high here
+	if(!hold)
+	{
+		SetISP(fd,1);
+	}
+}
+
+static int Sync(int fd, int freq,int retries,int hold)
+// freq=frequency in Hz
+// perform synchronization sequence
+//   --> ?
+//   <-- Synchronized
+//   --> Synchronized
+//   <-- OK
+//   --> 12000 (crystal frequency in kHz, decimal)
+//   <-- OK
+{
+	char
+		buffer[256];
+	int
+		retry;
+
+	ReportString(REPORT_INFO,"synchronizing...");
+	retry=retries;
+	while(retry--)
+	{
+		// enter ISP mode (drive ISP low, toggle reset low then high, if possible)
+		EnterISPMode(fd,hold);
+
+		// ensure no spurious received characters between open and now are pending from the target
+		LPCISP_SERIAL_FlushDevice(fd);
+
+		// send autobaud character ('?')
+		WriteChar(fd,'?');
+		if(ReadString(fd,buffer))
+		{
+			// expect to read back "Synchronized"
+			if(strncmp(buffer,"Synchronized",12)==0)
+			{
+				if(SendCommand(fd,"Synchronized",buffer,"OK")>0)
+				{
+						// send frequency in kHz
+					sprintf(buffer,"%d",freq/1000);
+					if(SendCommand(fd,buffer,buffer,"OK")>0)
+					{
+						ReportString(REPORT_INFO,"done\n");
+						return(0);
+					}
+				}
+			}
+		}
+		ReportString(REPORT_INFO,".");
+	}
+	return(-1);
+}
+
 //============ public functions ==============================================
 
-void ConfigureISPHold(int state)
-{
-	ispHold=state;
-}
-
-void ConfigureResetPin(int state)
-{
-	resetPin=state;
-}
-
-void ConfigureISPPin(int state)
-{
-	ispPin=state;
-}
-
-int ResetTarget(int fd)
+int LPCISP_ResetTarget(int fd)
 // attempt to reset target.  return -1 if reset pin is not mapped,
 // 0 otherwise.
 {
@@ -462,30 +542,7 @@ int ResetTarget(int fd)
 	return(-1);
 }
 
-void EnterISPMode(int fd, int hold)
-// enter the ISP mode.  Drive RESET and ISP low, then release RESET.
-// if hold is true then leave ISP asserted on exit.
-{
-	ReportString(REPORT_DEBUG_PROCESS,"\nentering ISP mode\n");
-
-	// echo is enabled by default, re-enable here since the part is being reset
-	echo=1;
-
-	// set ISP low, toggle reset if pin is mapped
-	SetISP(fd,0);
-	ResetTarget(fd);
-	
-	// allow target processor to boot
-	usleep(100000);
-
-	// if not asked to hold ISP low, set it back high here
-	if(!hold)
-	{
-		SetISP(fd,1);
-	}
-}
-
-void ExitISPMode(int fd)
+void LPCISP_ExitISPMode(int fd)
 {
 	char
 		response[256];
@@ -494,7 +551,7 @@ void ExitISPMode(int fd)
 
 	// ensure ISP is high
 	SetISP(fd,1);
-	if(ResetTarget(fd)<0)
+	if(LPCISP_ResetTarget(fd)<0)
 	{
 		// reset is not mapped; use GO command here to try to start program
 		ReportString(REPORT_DEBUG_PROCESS,"reset not mapped, attempting to jump to 0x00000000\n");
@@ -502,22 +559,7 @@ void ExitISPMode(int fd)
 	}
 }
 
-int Unlock(int fd)
-// unlock flash write/erase and go commands
-{
-	char
-		response[256];
-
-	if(SendCommand(fd,"U 23130",response,"0")>0)
-	{
-		ReportString(REPORT_DEBUG_PROCESS,"unlocked\n");
-		return(1);
-	}
-	ReportString(REPORT_DEBUG_PROCESS,"failed to unlock: %s\n",GetErrorString(response));
-	return(0);
-}
-
-int SetBaudRate(int fd, int baud, int stop)
+int LPCISP_SetBaudRate(int fd, int baud, int stop)
 // set the baud rate and stop bits
 // @@@ test me
 {
@@ -539,21 +581,6 @@ int SetBaudRate(int fd, int baud, int stop)
 		default:
 			// failed
 			break;
-	}
-	return(0);
-}
-
-int Echo(int fd, int state)
-// enable/disable serial echo
-{
-	char
-		response[256];
-
-	if(SendCommand(fd,state?"A 1":"A 0",response,"0")>=0)
-	{
-		ReportString(REPORT_DEBUG_PROCESS,"echo %s\n",state?"enabled":"disabled");
-		echo=state;
-		return(1);
 	}
 	return(0);
 }
@@ -601,7 +628,7 @@ static int PrepareSectorsForWrite(int fd, int startSector, int endSector, int ba
 	return(0);
 }
 
-int CopyRAMtoFlash(int fd, unsigned int src, unsigned int dest, unsigned int length)
+int LPCISP_CopyRAMtoFlash(int fd, unsigned int src, unsigned int dest, unsigned int length)
 // write a block of RAM to flash.
 // @@@ should qualify the arguments
 {
@@ -626,8 +653,8 @@ int CopyRAMtoFlash(int fd, unsigned int src, unsigned int dest, unsigned int len
 	return(0);
 }
 
-int Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo)
-// erase a range of sectors.  return 1 on success, 0 on failure
+int LPCISP_Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo)
+// erase a range of sectors.  return 0 on success, -1 on failure
 {
 	char
 		buffer[256];
@@ -651,7 +678,7 @@ int Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo
 				case 1:
 					// success
 					ReportString(REPORT_INFO,"erased\n");
-					return(1);
+					return(0);
 				case 0:
 					// executed okay but returned an error, handle it
 					ReportString(REPORT_ERROR,"erase: %s\n",GetErrorString(buffer));
@@ -662,10 +689,10 @@ int Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo
 			}
 		}
 	}
-	return(0);
+	return(-1);
 }
 
-int BlankCheck(int fd, int startSector, int endSector)
+int LPCISP_BlankCheck(int fd, int startSector, int endSector)
 // blank check a range of sectors.  return 1 on success, 0 on not blank, -1 on error.
 {
 	char
@@ -707,7 +734,7 @@ int BlankCheck(int fd, int startSector, int endSector)
 	return(-1);
 }
 
-unsigned int ReadPartID(int fd, unsigned int *id1)
+unsigned int LPCISP_ReadPartID(int fd, unsigned int *id1)
 // read and return part ID or ~0 on error
 // some parts (LPC18xxx) return an extra byte
 // for the part ID.  to cope with this we try
@@ -748,7 +775,7 @@ unsigned int ReadPartID(int fd, unsigned int *id1)
 	return(~0);
 }
 
-int ReadPartUID(int fd, unsigned int *uid)
+int LPCISP_ReadPartUID(int fd, unsigned int *uid)
 // read and return 0 on success or -1 on error.  uid must point to an array of four 32-bits each.
 // not all parts have a UID; will return -1 if unsupported.
 {
@@ -789,7 +816,7 @@ int ReadPartUID(int fd, unsigned int *uid)
 
 }
 
-int ReadBootCode(int fd, unsigned char *major, unsigned char *minor)
+int LPCISP_ReadBootCodeVersion(int fd, unsigned char *major, unsigned char *minor)
 // read and return boot code version.  return 0 on success or -1 on error
 {
 	char
@@ -855,7 +882,7 @@ int WriteRAMAddress(int fd, unsigned char *data, unsigned int addr, unsigned int
 	return(-1);
 }
 
-int ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int count, partinfo_t *partInfo)
+int LPCISP_ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int count, partinfo_t *partInfo)
 // read a block of data from RAM.
 {
 
@@ -899,7 +926,7 @@ int ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int 
 									lineCnt=0;
 									if(count==0)
 									{
-										return(1);
+										return(0);
 									}
 								}
 								else
@@ -922,7 +949,7 @@ int ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int 
 						data+=numRead;
 						if(count==0)
 						{
-							return(1);
+							return(0);
 						}
 					}
 				}
@@ -946,7 +973,7 @@ int ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int 
 			ReportString(REPORT_ERROR,"%s: no response\n",__FUNCTION__);
 			break;
 	}
-	return(0);
+	return(-1);
 
 }
 
@@ -1070,7 +1097,7 @@ int WriteToRAM(int fd, unsigned char *data,partinfo_t *partInfo)
 	return(!fail);
 }
 
-int WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo)
+int LPCISP_WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo)
 // write 256 bytes of flash at a time (the minimum block size)
 //   data = image data
 //   addr = start address (where first byte of data maps into target device)
@@ -1102,13 +1129,13 @@ int WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int lengt
 			{
 				ReportString(REPORT_DEBUG_PROCESS,"copied %d bytes into RAM for 0x%08x\n",bytesToWrite,addr);
 				// prepare the sector for writing
-				curSector=GetSectorAddr(addr,partInfo);	// get number of the sector containing address of this block
+				curSector=LPCISP_GetSectorAddr(addr,partInfo);	// get number of the sector containing address of this block
 				if(curSector>=0)
 				{
 					if(PrepareSectorsForWrite(fd,curSector,curSector,0,partInfo))	// @@@ only support bank 0 for now
 					{
 						// write to flash
-						if(CopyRAMtoFlash(fd,partInfo->flashBlockRAMBase,addr,partInfo->flashBlockSize))
+						if(LPCISP_CopyRAMtoFlash(fd,partInfo->flashBlockRAMBase,addr,partInfo->flashBlockSize))
 						{
 							// prepare for next
 							length-=bytesToWrite;
@@ -1144,54 +1171,83 @@ int WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int lengt
 		free(buffer);
 	}
 	ReportString(REPORT_INFO,"\n");
-	return(!fail);
+	return(fail?-1:0);
 }
 
-int Sync(int fd, int freq,int retries)
-// freq=frequency in Hz
-// perform synchronization sequence
-//   --> ?
-//   <-- Synchronized
-//   --> Synchronized
-//   <-- OK
-//   --> 12000 (crystal frequency in kHz, decimal)
-//   <-- OK
+int LPCISP_Sync(int fd, int baud, int clock, int retries, int setecho, int hold, int reset, int isp, partinfo_t *partInfo)
+// enter ISP mode, sync with and configure part, get part info.  return 0 on success, <0 on error.
+//   fd - file descriptor for open serial port
+//   baud - baud rate (if 0 use default 115200)
+//   clock - clock (if 0 use default 12MHz)
+//   retries - number of attempts to sync (if 0 will try once)
+//   setecho - if non-zero configure device to echo serial data
+//   hold - if true keep ISP asserted through programming sequence, otherwise negate after negating reset
+//   reset - pin to map for reset (PIN_NONE, PIN_DTR, PIN_nDTR, PIN_RTS, or PIN_nRTS)
+//   isp - pin to map for isp (PIN_NONE, PIN_DTR, PIN_nDTR, PIN_RTS, or PIN_nRTS)
+//   partInfo - pointer to part info structure to be filled by response after sync.
+// @@@ might be useful if this returned ISP error codes from device
 {
-	char
-		buffer[256];
 	int
-		retry;
-
-	ReportString(REPORT_INFO,"synchronizing...");
-	retry=retries;
-	while(retry--)
+		retval;
+	
+	retval=0;
+	resetPin=reset;
+	ispPin=isp;
+	lineTermination=TERM_ANY;
+	if(baud==0)
 	{
-		// enter ISP mode (drive ISP low, toggle reset low then high, if possible)
-		EnterISPMode(fd,ispHold);
+		baud=115200;
+	}
+	if(clock==0)
+	{
+		clock=12000;
+	}
 
-		// ensure no spurious received characters between open and now are pending from the target
-		FlushDevice(fd);
-
-		// send autobaud character ('?')
-		WriteChar(fd,'?');
-		if(ReadString(fd,buffer))
+	if(LPCISP_SERIAL_ChangeBaudRate(fd,baud)==0)
+	{
+		if(Sync(fd,clock*1000,retries,hold)==0)
 		{
-			// expect to read back "Synchronized"
-			if(strncmp(buffer,"Synchronized",12)==0)
+			if(Echo(fd,setecho)==0)
 			{
-				if(SendCommand(fd,"Synchronized",buffer,"OK")>0)
+				if(GetPartInfo(fd,partInfo)==0)
 				{
-						// send frequency in kHz
-					sprintf(buffer,"%d",freq/1000);
-					if(SendCommand(fd,buffer,buffer,"OK")>0)
+					// know the type of device, set line termination appropriately
+					lineTermination=partInfo->flags&TERM_MASK;
+					if(partInfo->numSectors)
 					{
-						ReportString(REPORT_INFO,"done\n");
-						return(1);
+						// only unlock device if it was identified
+						if(Unlock(fd)==0)
+						{
+							return(0);
+						}
+						else
+						{
+							retval=-ISP_ERR_COMM;
+						}
+					}
+					else
+					{
+						retval=-ISP_ERR_UNKNOWN_DEV;
 					}
 				}
+				else
+				{
+					retval=-ISP_ERR_INFO;
+				}
+			}
+			else
+			{
+				retval=-ISP_ERR_COMM;
 			}
 		}
-		ReportString(REPORT_INFO,".");
+		else
+		{
+			retval=-ISP_ERR_SYNC;
+		}
 	}
-	return(0);
+	else
+	{
+		retval=-ISP_ERR_BAUD;
+	}
+	return(retval);
 }
