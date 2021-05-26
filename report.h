@@ -15,4 +15,3 @@ void ReportChar(int level,const char c);
 void ReportString(int level,const char *format,...);
 void ReportBufferCtrl(int level,const unsigned char *buffer, unsigned int length);
 void ReportStringCtrl(int level,const char *string);
-void SetReportLevel(int level);

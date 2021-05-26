@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.1.0";
+	*version="0.1.1";
 
 static int
 	fd,
@@ -58,7 +58,7 @@ static int VerboseOpt(int *argc, char ***argv)
 {
 	if(*argc)
 	{
-		SetReportLevel(strtol(**argv,NULL,0));
+		LPCISP_SetReportLevel(strtol(**argv,NULL,0));
 		*argc=(*argc)-1;;
 		*argv=(*argv)+1;
 		return(0);
@@ -411,7 +411,7 @@ static void Usage(const char *progName)
 	int
 		i;
 
-	ReportString(REPORT_ERROR,"%s: ver. %s (c) 2015-2020 Cosmodog, Ltd.\n",progName,version);
+	ReportString(REPORT_ERROR,"%s: ver. %s (c) 2015-2021 Cosmodog, Ltd.\n",progName,version);
 	ReportString(REPORT_ERROR,"usage:\n");
 	ReportString(REPORT_ERROR,"  %s [options] device\n",progName);
 	ReportString(REPORT_ERROR,"where\n");
@@ -469,6 +469,7 @@ int main(int argc,char *argv[])
 		};
 
 	fail=0;
+	LPCISP_ReportStream(stdout);
 #if defined __UNIX__
 	progName=basename(*argv);
 #else
@@ -487,7 +488,7 @@ int main(int argc,char *argv[])
 		resetPin=PIN_NONE;
 		ispPin=PIN_NONE;
 		hold=0;
-		SetReportLevel(REPORT_INFO);
+		LPCISP_SetReportLevel(REPORT_INFO);
 		erase=0;
 		eraseall=0;
 		echo=0;

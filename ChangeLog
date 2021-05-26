@@ -92,6 +92,11 @@
 	    corrected bug which caused verify to operate on word instead of byte boundaries
 	  0.0.33 -- 27 June 2020
 	    swapped major and minor boot version (were reversed)
+	  0.1.0 -- 3 September 2020
+	    split core functionality into a library so it can be more easily included in other applications (Unix only)
+	  0.1.1 -- 26 May 2021
+	    corrected naming issue which caused Windows version to fail to build
+	    disabled XON/XOFF flow control on Windows driver (was causing 0x11 and 0x13 to be dropped when transfering data via binary)
 
 	to do:
 		add support for lots more parts

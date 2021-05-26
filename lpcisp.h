@@ -91,5 +91,8 @@ int LPCISP_Sync(int fd, int baud, int clock, int retries, int setecho, int hold,
 //   fileName: name of hex file to load
 //   start: pointer to start address (to be filled in)
 //   length: pointer to length of image (to be filled in)
-extern unsigned char *LPCISP_ReadHexFile(const char *fileName,int *start,int *length);
+unsigned char *LPCISP_ReadHexFile(const char *fileName,int *start,int *length);
+
+void LPCISP_ReportStream(FILE *p);
+void LPCISP_SetReportLevel(int level);
 

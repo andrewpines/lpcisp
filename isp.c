@@ -487,12 +487,14 @@ static int Sync(int fd, int freq,int retries,int hold)
 //   <-- OK
 {
 	char
-		buffer[256];
+		buffer[4096];
 	int
 		retry;
+	const char
+		syncStr[]="Synchronized";
 
 	ReportString(REPORT_INFO,"synchronizing...");
-	retry=retries;
+	retry=retries?retries:1;
 	while(retry--)
 	{
 		// enter ISP mode (drive ISP low, toggle reset low then high, if possible)
@@ -503,20 +505,20 @@ static int Sync(int fd, int freq,int retries,int hold)
 
 		// send autobaud character ('?')
 		WriteChar(fd,'?');
-		if(ReadString(fd,buffer))
+		
+		// expect "Synchronized" followed by whatever termination this device uses.  Read until timeout.
+		memset(buffer,0,sizeof(buffer));
+		LPCISP_SERIAL_ReadBytes(fd,(unsigned char *)buffer,ARRAY_SIZE(buffer),100000);
+		if(strncmp(buffer,syncStr,strlen(syncStr))==0)
 		{
-			// expect to read back "Synchronized"
-			if(strncmp(buffer,"Synchronized",12)==0)
+			if(SendCommand(fd,syncStr,buffer,"OK")>0)
 			{
-				if(SendCommand(fd,"Synchronized",buffer,"OK")>0)
+				// send frequency in kHz
+				sprintf(buffer,"%d",freq/1000);
+				if(SendCommand(fd,buffer,buffer,"OK")>0)
 				{
-						// send frequency in kHz
-					sprintf(buffer,"%d",freq/1000);
-					if(SendCommand(fd,buffer,buffer,"OK")>0)
-					{
-						ReportString(REPORT_INFO,"done\n");
-						return(0);
-					}
+					ReportString(REPORT_INFO,"done\n");
+					return(0);
 				}
 			}
 		}
@@ -847,7 +849,7 @@ int LPCISP_ReadBootCodeVersion(int fd, unsigned char *major, unsigned char *mino
 	return(-1);
 }
 
-int WriteRAMAddress(int fd, unsigned char *data, unsigned int addr, unsigned int count)
+static int WriteRAMAddress(int fd, unsigned char *data, unsigned int addr, unsigned int count)
 // prepare to write to RAM.  send the address and the count.  return
 // 0 on success, -1 on error.
 {
@@ -977,7 +979,7 @@ int LPCISP_ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsign
 
 }
 
-int WriteToRAM(int fd, unsigned char *data,partinfo_t *partInfo)
+static int WriteToRAM(int fd, unsigned char *data,partinfo_t *partInfo)
 // write a block of data to RAM.
 //   data -- pointer to data
 //   addr -- start address in device (must be a multiple of four)
@@ -1212,6 +1214,8 @@ int LPCISP_Sync(int fd, int baud, int clock, int retries, int setecho, int hold,
 				if(GetPartInfo(fd,partInfo)==0)
 				{
 					// know the type of device, set line termination appropriately
+					// @@@ now that we detect the type of line termination of the "Synchronized" response it might be unnecessary
+					// @@@ to set it here from the part descriptor.
 					lineTermination=partInfo->flags&TERM_MASK;
 					if(partInfo->numSectors)
 					{

@@ -7,7 +7,7 @@ Building on Unix-based systems (Linux, OSX) should be as simple as:
 You may need root permissions to install (e.g., "sudo make install");
 it simply copies the executable to /usr/local/bin.
 
-To build on Windows (Visual Studio Build Tools):
+To build on Windows (Visual Studio Build Tools, Developer Command Prompt):
 	nmake /C /F Makefile.vc clean
 	nmake /C /F Makefile.vc
 

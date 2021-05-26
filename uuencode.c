@@ -1,7 +1,7 @@
 
 #include "includes.h"
 
-void uuencode(const unsigned char *src, unsigned char *dest, unsigned int nmemb)
+HIDDEN void uuencode(const unsigned char *src, unsigned char *dest, unsigned int nmemb)
 // encode nmemb bytes from src into dest.  return length of dest.  if nmemb is
 // not a multiple of three the buffer pointed to by src must be at least
 // the next multiple of three longer than nmemb because the extra byte or two
@@ -32,7 +32,7 @@ void uuencode(const unsigned char *src, unsigned char *dest, unsigned int nmemb)
 	*dest++='\0';
 }
 
-int uudecode(const char *src, unsigned char *dest)
+HIDDEN int uudecode(const char *src, unsigned char *dest)
 // read from uuencoded data, decode and place into area pointed to by
 // dest.  return number of bytes in src.  performs no error checking.
 // may read up to two bytes past end of buffer pointed to by src

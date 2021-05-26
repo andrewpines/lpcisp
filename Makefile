@@ -27,7 +27,7 @@ ifneq ($(findstring Darwin,$(OSTYPE)),)
 CFLAGS		+= -D__OSX__
 endif
 
-LIBOJBECTS =		\
+LIBOBJECTS =		\
 	asyncserial.o	\
 	ihex.o			\
 	isp.o			\
@@ -45,9 +45,9 @@ all : lib$(APP).a $(APP)
 	@echo "  compiling" $< to $@
 	@$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
 
-lib$(APP).a : $(LIBOJBECTS)
-	@echo "  building library lib$(APP).a"
-	@ar rcs lib$(APP).a $(LIBOJBECTS)
+lib$(APP).a : $(LIBOBJECTS)
+	@echo "  building library lib$(APP)"
+	@ar rcs lib$(APP).a $(LIBOBJECTS)
 
 $(APP) : $(OBJECTS) lib$(APP).a
 	@echo "  linking $(APP)"

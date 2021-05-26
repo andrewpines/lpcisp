@@ -3,6 +3,9 @@
 // Windows' Sleep() function is in milliseconds, divide by 1000 to go from microseconds to milliseconds.  Accurate
 // enough for our purposes.
 #define usleep(x) Sleep((x)/1000)
+#define HIDDEN	// @@@ need to add Windows-equivalent
+#else
+#define HIDDEN	__attribute__((visibility("hidden")))
 #endif
 
 #define RTN_CMD_SUCCESS								0

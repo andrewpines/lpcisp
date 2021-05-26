@@ -1,6 +1,9 @@
 
 #include "includes.h"
 
+static FILE
+	*fp;
+
 static const char
 	*errorCodes[]=
 	{
@@ -29,7 +32,7 @@ static const char
 static int
 	reportLevel=REPORT_INFO;
 
-const char *GetErrorString(const char *s)
+HIDDEN const char *GetErrorString(const char *s)
 // report error code
 {
 	int
@@ -56,22 +59,23 @@ void ReportString(int level,const char *format,...)
 	if(level<=reportLevel)
 	{
 		va_start(p,format);     // Initialize start of variable-length argument list
-		vprintf(format,p);
+		vfprintf(fp,format,p);
 		va_end(p);
-		fflush(stdout);
+		fflush(fp);
 	}
 }
 
-void ReportChar(int level,const char c)
+HIDDEN void ReportChar(int level,const char c)
 // print a character if level<=reportLevel
 {
 	if(level<=reportLevel)
 	{
-		fprintf(stderr,"%c",c);
+		fprintf(fp,"%c",c);
+		fflush(fp);
 	}
 }
 
-void ReportBufferCtrl(int level,const unsigned char *buffer, unsigned int length)
+HIDDEN void ReportBufferCtrl(int level,const unsigned char *buffer, unsigned int length)
 // print a diagnostic message, if enabled.  convert control characters to printable, e.g,
 // control-C becomes <03>
 {
@@ -85,7 +89,7 @@ void ReportBufferCtrl(int level,const unsigned char *buffer, unsigned int length
 	ReportString(level,"]\n");
 }
 
-void ReportCharCtrl(int level, const char c)
+HIDDEN void ReportCharCtrl(int level, const char c)
 {
 	if((c>=' ')&&(c<='~'))
 	{
@@ -97,7 +101,7 @@ void ReportCharCtrl(int level, const char c)
 	}
 }
 
-void ReportStringCtrl(int level,const char *string)
+HIDDEN void ReportStringCtrl(int level,const char *string)
 // print a diagnostic message, if enabled.  convert control characters to printable, e.g,
 // control-C becomes <03>
 {
@@ -108,9 +112,15 @@ void ReportStringCtrl(int level,const char *string)
 	}
 }
 
-
-void SetReportLevel(int level)
+void LPCISP_SetReportLevel(int level)
 {
 	reportLevel=level;
 }
+
+void LPCISP_ReportStream(FILE *p)
+// allow application to change log output to a different stream
+{
+	fp=p;
+}
+
 

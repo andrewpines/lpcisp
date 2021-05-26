@@ -149,7 +149,7 @@ int Terminal(int fd)
 	do
 	{
 		// if one or more characters come in from serial port display to console
-		numRead=SERIAL_ReadBytes(fd,buf,256,0);
+		numRead=LPCISP_SERIAL_ReadBytes(fd,buf,256,0);
 		if(numRead>0)
 		{
 			write(1,buf,numRead);
@@ -170,7 +170,7 @@ int Terminal(int fd)
 			else if(c>=0)
 			{
 				buf[0]=c;
-				SERIAL_WriteBytes(fd,buf,1);
+				LPCISP_SERIAL_WriteBytes(fd,buf,1);
 			}
 		}
 	}while(c!=exitCode);

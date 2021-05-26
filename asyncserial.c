@@ -52,7 +52,6 @@ int LPCISP_SERIAL_ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsi
 			readSoFar+=numRead;
 		}
 	}
-
 	return(numRead>=0?readSoFar:numRead);
 }
 
@@ -393,6 +392,8 @@ int LPCISP_SERIAL_OpenDevice(char *name)
     				dcbSerialParams.fRtsControl		= RTS_CONTROL_DISABLE;
     				dcbSerialParams.fOutxCtsFlow	= FALSE;
     				dcbSerialParams.fOutxDsrFlow	= FALSE;
+					dcbSerialParams.fOutX			= 0;
+					dcbSerialParams.fInX			= 0;
 					if(SetCommState(handles[fd],&dcbSerialParams))
 					{
 						if(SetReadTimeout(fd,1000000))

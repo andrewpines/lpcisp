@@ -3,7 +3,7 @@
 #
 #  Use this Makefile for Windows-based systems (see Makefile to build for Unix-based systems)
 #
-# invoke as:
+# invoke from Visual Studio Build Tools, Developer Command Prompt, as:
 #   nmake /C /F Makefile.vc clean
 #   nmake /C /F Makefile.vc
 #
@@ -35,33 +35,33 @@ HEADERS =			\
 	term.h			\
 	uuencode.h
 
-main.obj: main.c $(HEADERS)
+main.obj: main.c
 	@$(CC) -c $(CFLAGS) main.c
 
-asyncserial.obj: asyncserial.c $(HEADERS)
+asyncserial.obj: asyncserial.c
 	@$(CC) -c $(CFLAGS) asyncserial.c
 
-uuencode.obj: uuencode.c $(HEADERS)
+uuencode.obj: uuencode.c
 	@$(CC) -c $(CFLAGS) uuencode.c
 
-ihex.obj: ihex.c $(HEADERS)
+ihex.obj: ihex.c
 	@$(CC) -c $(CFLAGS) ihex.c
 
-partdesc.obj: partdesc.c $(HEADERS)
+partdesc.obj: partdesc.c
 	@$(CC) -c $(CFLAGS) partdesc.c
 
-report.obj: report.c $(HEADERS)
+report.obj: report.c
 	@$(CC) -c $(CFLAGS) report.c
 
-isp.obj: isp.c $(HEADERS)
+isp.obj: isp.c
 	@$(CC) -c $(CFLAGS) isp.c
 
-term.obj: term.c $(HEADERS)
+term.obj: term.c
 	@$(CC) -c $(CFLAGS) term.c
 
 lpcisp.exe: $(OBJS)
 	@$(CC) /Felpcisp.exe $(OBJS) winmm.lib
 
 clean:
-    @del /Q $(OBJS) lpcisp.exe vc*.pdb
+    @del /q $(OBJS) lpcisp.exe vc*.pdb
 

@@ -626,7 +626,7 @@ const partinfo_t
 		.ramSize		= 0,
 	};
 
-void DumpPartList(FILE *fp)
+HIDDEN void DumpPartList(FILE *fp)
 {
 	int
 		i;
@@ -678,7 +678,7 @@ static unsigned int GetFlashSize(partinfo_t *p)
 	return(size);
 }
 
-void ReportPartInfo(int level,partinfo_t *p)
+HIDDEN void ReportPartInfo(int level,partinfo_t *p)
 // report information about specifed part
 {
 	int
@@ -704,7 +704,7 @@ void ReportPartInfo(int level,partinfo_t *p)
 	}
 }
 
-int GetPartInfo(int fd,partinfo_t *p)
+HIDDEN int GetPartInfo(int fd,partinfo_t *p)
 // get part information from the target (if possible), fill out passed structure.
 // if part ID can't be matched still return the part ID, UID, and boot code version.
 {
