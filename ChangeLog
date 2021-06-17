@@ -97,6 +97,8 @@
 	  0.1.1 -- 26 May 2021
 	    corrected naming issue which caused Windows version to fail to build
 	    disabled XON/XOFF flow control on Windows driver (was causing 0x11 and 0x13 to be dropped when transfering data via binary)
+	  0.1.2 -- 17 June 2021
+	    corrected top-level error reporting (was incorrectly indexing into errString[])
 
 	to do:
 		add support for lots more parts
