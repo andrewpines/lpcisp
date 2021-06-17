@@ -564,7 +564,7 @@ int main(int argc,char *argv[])
 					}
 					else
 					{
-						ReportString(REPORT_ERROR,"failed: %s\n",errString[fail]);
+						ReportString(REPORT_ERROR,"failed: %s\n",errString[-fail]);
 					}
 				}
 			}
