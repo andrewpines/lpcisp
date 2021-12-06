@@ -99,6 +99,10 @@
 	    disabled XON/XOFF flow control on Windows driver (was causing 0x11 and 0x13 to be dropped when transfering data via binary)
 	  0.1.2 -- 17 June 2021
 	    corrected top-level error reporting (was incorrectly indexing into errString[])
+	  0.1.3 -- 6 December 2021
+	    added LPCISP_FixVectorTable() so applications which link lpcisp as a library can more easily patch the vector table
+	  	added parts: LPC1345FHN33, LPC1345FBD48, LPC1346FHN33, LPC1346FBD48, LPC1347FHN33, LPC1347FBD48, LPC1347FBD64, LPC1315FHN33, LPC1315FBD48, LPC1316FHN33, LPC1316FBD48, LPC1317FHN33, LPC1317FBD48, LPC1317FBD64
+	  	report device ID of unknown parts
 
 	to do:
 		add support for lots more parts
