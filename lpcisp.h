@@ -72,6 +72,7 @@ typedef struct
 #define VECT_REMAP256	(1<<5)	// set true if device remaps the first 256 bytes (vectors) in ISP mode, thus making that section un-verifiable
 #define SKIP_0			(1<<6)	// when reading skip first word of flash
 
+void LPCISP_FixVectorTable(unsigned char *data);
 int LPCISP_SetBaudRate(int fd, int baud, int stop);
 int LPCISP_CopyRAMtoFlash(int fd, unsigned int src, unsigned int dest, unsigned int length);
 int LPCISP_BlankCheck(int fd, int startSector, int endSector);

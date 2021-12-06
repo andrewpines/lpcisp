@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.1.2";
+	*version="0.1.3";
 
 static int
 	fd,
@@ -454,9 +454,6 @@ int main(int argc,char *argv[])
 		*progName;
 	unsigned char
 		buffer[256];
-	unsigned int
-		*vect,
-		cs;
 	const char
 		*errString[]=
 		{
@@ -565,6 +562,10 @@ int main(int argc,char *argv[])
 					else
 					{
 						ReportString(REPORT_ERROR,"failed: %s\n",errString[-fail]);
+						if(fail==-ISP_ERR_UNKNOWN_DEV)
+						{
+							ReportString(REPORT_ERROR,"  id: %08x\n",partInfo.id[0]);
+						}
 					}
 				}
 			}
@@ -617,14 +618,7 @@ int main(int argc,char *argv[])
 						// if image starts at 0x0000 or forced fix up the vector table.
 						if(vector||(start==0))
 						{
-							// vector 7 is the 2's comp of the arithmetic sum of vectors 0-6.
-							vect=(unsigned int *)data;
-							cs=0;
-							for(i=0;i<7;i++)
-							{
-								cs+=*vect++;
-							}
-							*vect=-cs;
+							LPCISP_FixVectorTable(data);
 						}
 
 						// write image to flash

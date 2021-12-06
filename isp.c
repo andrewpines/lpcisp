@@ -353,7 +353,6 @@ static char *AddTermination(char *str)
 	return(str);
 }
 
-
 static int SendCommand(int fd, const char *command, char *response, const char *match)
 // send a command, return the response.
 // the device echos everything we send it so watch for the same
@@ -529,6 +528,24 @@ static int Sync(int fd, int freq,int retries,int hold)
 
 //============ public functions ==============================================
 
+void LPCISP_FixVectorTable(unsigned char *data)
+// assume start of data is address 0, patch vector table so it's valid.
+// vector 7 is the 2's comp of the arithmetic sum of vectors 0-6.
+{
+	unsigned int
+		*vect,
+		cs,
+		i;
+
+	vect=(unsigned int *)data;
+	cs=0;
+	for(i=0;i<7;i++)
+	{
+		cs+=*vect++;
+	}
+	*vect=-cs;
+}
+
 int LPCISP_ResetTarget(int fd)
 // attempt to reset target.  return -1 if reset pin is not mapped,
 // 0 otherwise.
@@ -667,7 +684,7 @@ int LPCISP_Erase(int fd, int startSector, int endSector, int bank, partinfo_t *p
 		{
 			if(partInfo->numBanks>1)
 			{
-				// if device has more than one bank include the bank arguemtn
+				// if device has more than one bank include the bank argument
 				sprintf(buffer,"E %d %d %d",startSector,endSector,bank);
 			}
 			else
