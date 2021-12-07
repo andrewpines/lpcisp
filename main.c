@@ -692,7 +692,7 @@ int main(int argc,char *argv[])
 							// dumpAddr and dumpLength must be word-aligned
 							dumpAddr&=~3;
 							dumpLength=(dumpLength+3)&~3;
-							fail=(LPCISP_ReadFromTarget(fd,data,dumpAddr,dumpLength,&partInfo)<=0);
+							fail=(LPCISP_ReadFromTarget(fd,data,dumpAddr,dumpLength,&partInfo)<0);
 							if(!fail)
 							{
 								while(i<dumpLength)
