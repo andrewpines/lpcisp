@@ -498,20 +498,20 @@ const partinfo_t
 		// the following are from UM10524, LPC1315/16/17/45/46/47 User manual, Rev. 4 -- 12 March 2013.
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID				name															sectors							banks	ram			size	address
-		{	{0x28010541,	~0			},	~0,	"LPC1345FHN33",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x28010541,	~0			},	~0,	"LPC1345FBD48",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x08018542,	~0			},	~0,	"LPC1346FHN33",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x08018542,	~0			},	~0,	"LPC1346FBD48",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x08020543,	~0			},	~0,	"LPC1347FHN33",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x08020543,	~0			},	~0,	"LPC1347FBD48",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x08020543,	~0			},	~0,	"LPC1347FBD64",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x3A010523,	~0			},	~0,	"LPC1315FHN33",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x3A010523,	~0			},	~0,	"LPC1315FBD48",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x1A018524,	~0			},	~0,	"LPC1316FHN33",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x1A018524,	~0			},	~0,	"LPC1316FBD48",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x1A020525,	~0			},	~0,	"LPC1317FHN33",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x1A020525,	~0			},	~0,	"LPC1317FBD48",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
-		{	{0x1A020525,	~0			},	~0,	"LPC1317FBD64",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	HAS_UID	},
+		{	{0x28010541,	~0			},	~0,	"LPC1345FHN33",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x28010541,	~0			},	~0,	"LPC1345FBD48",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x08018542,	~0			},	~0,	"LPC1346FHN33",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x08018542,	~0			},	~0,	"LPC1346FBD48",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x08020543,	~0			},	~0,	"LPC1347FHN33",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x08020543,	~0			},	~0,	"LPC1347FBD48",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x08020543,	~0			},	~0,	"LPC1347FBD64",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x3A010523,	~0			},	~0,	"LPC1315FHN33",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x3A010523,	~0			},	~0,	"LPC1315FBD48",													8,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1A018524,	~0			},	~0,	"LPC1316FHN33",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1A018524,	~0			},	~0,	"LPC1316FBD48",													12,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1A020525,	~0			},	~0,	"LPC1317FHN33",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1A020525,	~0			},	~0,	"LPC1317FBD48",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
+		{	{0x1A020525,	~0			},	~0,	"LPC1317FBD64",													16,			sectorMap4k,		1,		8192,		1024,	0x10000300,	UUENCODE|HAS_UID	},
 
 		// the following are from UM10470,	~0, LPC178x/7x User manual, Rev. 3.1 -- 15 September 2014.
 		//																										# of							flash				block	block RAM
