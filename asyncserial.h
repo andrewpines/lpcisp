@@ -3,6 +3,6 @@ unsigned int LPCISP_SERIAL_WriteBytes(int fd,const unsigned char *buf,unsigned i
 void LPCISP_SERIAL_SetDTR(int fd, int state);
 void LPCISP_SERIAL_SetRTS(int fd, int state);
 void LPCISP_SERIAL_FlushDevice(int fd);
-int LPCISP_SERIAL_OpenDevice(char *name);
+int LPCISP_SERIAL_OpenDevice(const char *name);
 void LPCISP_SERIAL_CloseDevice(int fd);
 int LPCISP_SERIAL_ChangeBaudRate(int fd, int baud);

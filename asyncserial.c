@@ -185,7 +185,7 @@ void LPCISP_SERIAL_FlushDevice(int fd)
 	}
 }
 
-int LPCISP_SERIAL_OpenDevice(char *name)
+int LPCISP_SERIAL_OpenDevice(const char *name)
 // open the device that we are going to communicate through
 // set it to 115200 baud, raw mode
 // return descriptor number on success, -1 on error
