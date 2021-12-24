@@ -1197,7 +1197,7 @@ int LPCISP_Sync(int fd, int baud, int clock, int retries, int setecho, int hold,
 // enter ISP mode, sync with and configure part, get part info.  return 0 on success, <0 on error.
 //   fd - file descriptor for open serial port
 //   baud - baud rate (if 0 use default 115200)
-//   clock - clock (if 0 use default 12MHz)
+//   clock - clock in kHz (if 0 use default 12MHz)
 //   retries - number of attempts to sync (if 0 will try once)
 //   setecho - if non-zero configure device to echo serial data
 //   hold - if true keep ISP asserted through programming sequence, otherwise negate after negating reset

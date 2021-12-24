@@ -43,6 +43,8 @@ static char
 static long
 	dumpAddr,
 	dumpLength;
+static int
+	dumpSize;
 
 static void ReportFileInfo(int level)
 {
@@ -273,6 +275,17 @@ static int DumpOpt(int *argc, char ***argv)
 		dumpLength=strtol(**argv,NULL,0);
 		*argv=(*argv)+1;
 		*argc=(*argc)-2;
+		dumpSize=1;
+		if(*argc&&(**argv[0]!='-'))
+		{
+			dumpSize=strtol(**argv,NULL,0);
+			*argv=(*argv)+1;
+			*argc=(*argc)-1;
+		}
+		if((dumpSize!=1)&&(dumpSize!=2)&&(dumpSize!=4))
+		{
+			dumpSize=1;
+		}
 		return(0);
 	}
 	return(-1);
@@ -383,27 +396,27 @@ static token_t
 	tokenList[]=
 	{
 			// token name	function		help string
-		{	"-device",		DeviceOpt,		" devicename     specify an LPC device.  default is to attempt to program whatever is attached."						},
-		{	"-reset",		ResetOpt,		" ctrl            map reset to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
-		{	"-isp",			ISPOpt,			" ctrl              map ISP to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
-		{	"-hold",		HoldOpt,		"                  assert ISP through programming sequence (default is to negate at initialization)"					},
-		{	"-baud",		BaudOpt,		" rate             set the baud rate for ISP mode (default=115200)"														},
-		{	"-tbaud",		TBaudOpt,		" rate            set the baud rate for the terminal (default=115200)"													},
-		{	"-clock",		ClockOpt,		" rate            set the clock rate in kHz (default=12000)"															},
-		{	"-retry",		RetryOpt,		" num             set number of retries when synchronizing (default=25)"												},
-		{	"-bin",			BinFileOpt,		" filename          specify name of binary file to load"																},
-		{	"-hex",			HexFileOpt,		" filename          specify name of hex file to load"																	},
-		{	"-start",		StartOpt,		" address         override start address (specify AFTER hex or binary file)"											},
-		{	"-erasemin",	EraseOpt,		"              erase only required sectors on target device (may fail if code is read-protected)"						},
-		{	"-erase",		EraseAllOpt,	"                 erase all sectors on target device"																	},
-		{	"-echo",		EchoOpt,		"                  enable echo from target (default is no echo)"														},
-		{	"-vector",		VectorOpt,		"                patch vector 7 to 2's complement of the sum of vectors 0 through 6 regardless of address of image"		},
-		{	"-write",		WriteOpt,		"                 write image to target device"																			},
-		{	"-verify",		VerifyOpt,		"                verify image"																							},
-		{	"-dump",		DumpOpt,		" address length   read from length bytes from memory starting at address, dump to console"								},
-		{	"-term",		TermOpt,		"                  enter terminal mode after other operations"															},
-		{	"-verbose",		VerboseOpt,		" level         set reporting level (0=errors only, 1=minimum, 2=progress (default), 3=process debug, 4=full debug)"	},
-		{	"-parts",		PartsOpt,		"                 list supported devices"																				},
+		{	"-device",		DeviceOpt,		" devicename           specify an LPC device.  default is to attempt to program whatever is attached."						},
+		{	"-reset",		ResetOpt,		" ctrl                  map reset to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
+		{	"-isp",			ISPOpt,			" ctrl                    map ISP to a serial control signal.  ctrl may be one of dtr, ndtr, rts, or nrts (n=inverted)"		},
+		{	"-hold",		HoldOpt,		"                        assert ISP through programming sequence (default is to negate at initialization)"					},
+		{	"-baud",		BaudOpt,		" rate                   set the baud rate for ISP mode (default=115200)"													},
+		{	"-tbaud",		TBaudOpt,		" rate                  set the baud rate for the terminal (default=115200)"												},
+		{	"-clock",		ClockOpt,		" rate                  set the clock rate in kHz (default=12000)"															},
+		{	"-retry",		RetryOpt,		" num                   set number of retries when synchronizing (default=25)"												},
+		{	"-bin",			BinFileOpt,		" filename                specify name of binary file to load"																},
+		{	"-hex",			HexFileOpt,		" filename                specify name of hex file to load"																	},
+		{	"-start",		StartOpt,		" address               override start address (specify AFTER hex or binary file)"											},
+		{	"-erasemin",	EraseOpt,		"                    erase only required sectors on target device (may fail if code is read-protected)"						},
+		{	"-erase",		EraseAllOpt,	"                       erase all sectors on target device"																	},
+		{	"-echo",		EchoOpt,		"                        enable echo from target (default is no echo)"														},
+		{	"-vector",		VectorOpt,		"                      patch vector 7 to 2's complement of the sum of vectors 0 through 6 regardless of address of image"	},
+		{	"-write",		WriteOpt,		"                       write image to target device"																		},
+		{	"-verify",		VerifyOpt,		"                      verify image"																						},
+		{	"-dump",		DumpOpt,		" address length [size]  read from length bytes from memory starting at address, dump to console"							},
+		{	"-term",		TermOpt,		"                        enter terminal mode after other operations"														},
+		{	"-verbose",		VerboseOpt,		" level               set reporting level (0=errors only, 1=minimum, 2=progress (default), 3=process debug, 4=full debug)"	},
+		{	"-parts",		PartsOpt,		"                       list supported devices"																				},
 	};
 
 static void Usage(const char *progName)
@@ -703,15 +716,27 @@ int main(int argc,char *argv[])
 									{
 										ReportString(REPORT_MINIMUM,"   ");
 									}
-									for(j=0;j<lineLen;j++)
+									for(j=0;j<lineLen;j+=dumpSize)
 									{
 										if((i+j)<dumpLength)
 										{
-											ReportString(REPORT_MINIMUM,"%02x ",(unsigned char)data[i+j]);
+											switch(dumpSize)
+											{
+												case 4:
+													ReportString(REPORT_MINIMUM,"%02x%02x%02x%02x ",(unsigned char)data[i+j+3],(unsigned char)data[i+j+2],(unsigned char)data[i+j+1],(unsigned char)data[i+j]);
+													break;
+												case 2:
+													ReportString(REPORT_MINIMUM,"%02x%02x ",(unsigned char)data[i+j+1],(unsigned char)data[i+j]);
+													break;
+												default:
+													ReportString(REPORT_MINIMUM,"%02x ",(unsigned char)data[i+j]);
+													break;
+											}
 										}
 										else
 										{
-											ReportString(REPORT_MINIMUM,"   ");
+											// end of data on last line, pad so ASCII lines up
+											ReportString(REPORT_MINIMUM,dumpSize==1?"   ":(dumpSize==2?"     ":"         "));
 										}
 									}
 									ReportString(REPORT_MINIMUM," - ");

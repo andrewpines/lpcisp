@@ -266,6 +266,7 @@ Basic implementation:
 int WriteLPCDevice(const char *hexFileName, const char *deviceName)
 // hexFileName - path to file to write to device
 // deviceName - name of serial device, like /dev/ttyUSB0
+// return 0 on success, -1 on any error.
 {
 	int
 		fd,
@@ -286,7 +287,7 @@ int WriteLPCDevice(const char *hexFileName, const char *deviceName)
 	{
 		if(start==0)
 		{
-			LPCISP_FixVectorTable(data);	/* if image starts at address zero fix up the vector table */
+			LPCISP_FixVectorTable(buffer);	/* if image starts at address zero fix up the vector table */
 		}
 		fd=LPCISP_SERIAL_OpenDevice(deviceName);	/* open the serial device */
 		if(fd>=0)
@@ -302,6 +303,7 @@ int WriteLPCDevice(const char *hexFileName, const char *deviceName)
 					{
 						LPCISP_ExitISPMode(fd);				/* exit ISP mode, start application */
 						fprintf(stderr,"success!\n");
+						return(0);
 					}
 					else
 					{
@@ -329,4 +331,5 @@ int WriteLPCDevice(const char *hexFileName, const char *deviceName)
 	{
 		fprintf(stderr,"failed to open hex file %s, %s\n",hexFileName,strerror(errno));
 	}
+	return(-1);
 }
