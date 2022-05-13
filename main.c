@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.2.0";
+	*version="0.2.1";
 
 static int
 	fd,
@@ -330,52 +330,63 @@ static int StartOpt(int *argc, char ***argv)
 
 static int BinFileOpt(int *argc, char ***argv)
 {
-	FILE *
-		fp;
-	struct stat
-		info;
+	FILE
+		*fp;
 	int
-		numRead;
+		retval;
 
+	retval=-1;
 	if(*argc)
 	{
+		// save file name
+		fileName=**argv;
+		*argc=(*argc)-1;;
+		*argv=(*argv)+1;
+		// throw out a previously-loaded buffer if one exists
 		if(data)
 		{
-			// throw out a previously-loaded buffer if one exists
 			free(data);
 		}
 
 		// get size (and existence) of file, allocate a buffer, read it in
-		fileName=**argv;
-		if(stat(fileName,&info)>=0)
+		if((fp=fopen(fileName,"rb")))
 		{
-			start=0;
-			length=info.st_size;
-			data=(unsigned char *)malloc(length);
-			if(data)
+			// get file size
+			fseek(fp,0L,SEEK_END);
+			if((length=ftell(fp)))
 			{
-				fp=fopen(**argv,"r");
-				if(fp)
+				rewind(fp);
+				start=0;
+				data=(unsigned char *)malloc(length);
+				if(data)
 				{
-					numRead=fread(data,1,length,fp);
-					fclose(fp);
-					if(numRead==length)
+					if((fread(data,1,length,fp)==length))
 					{
 						ReportFileInfo(REPORT_INFO);
-						*argc=(*argc)-1;;
-						*argv=(*argv)+1;
-						return(0);
+						retval=0;
 					}
+					else
+					{
+						ReportString(REPORT_ERROR,"failed to read %d bytes from \"%s\": %s\n",length,fileName,strerror(errno));
+					}
+				}
+				else
+				{
+					ReportString(REPORT_ERROR,"failed to allocate memory: %s\n",strerror(errno));
 				}
 			}
 			else
 			{
-				ReportString(REPORT_ERROR,"failed to allocate memory: %s\n",strerror(errno));
+				ReportString(REPORT_ERROR,"zero-length file: %s\n",fileName);
 			}
+			fclose(fp);
 		}
-		ReportString(REPORT_ERROR,"failed to open \"%s\" for reading: %s\n",fileName,strerror(errno));
+		else
+		{
+			ReportString(REPORT_ERROR,"failed to open \"%s\" for reading: %s\n",fileName,strerror(errno));
+		}
 	}
-	return(-1);
+	return(retval);
 }
 
 //========== token handling ==========
