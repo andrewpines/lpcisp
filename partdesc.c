@@ -722,7 +722,7 @@ HIDDEN void ReportPartInfo(int level,partinfo_t *p)
 	}
 }
 
-HIDDEN int GetPartInfo(int fd,partinfo_t *p)
+HIDDEN int GetPartInfo(int fd, lpcispcfg_t *cfg,partinfo_t *p)
 // get part information from the target (if possible), fill out passed structure.
 // if part ID can't be matched still return the part ID, UID, and boot code version.
 {
@@ -736,7 +736,7 @@ HIDDEN int GetPartInfo(int fd,partinfo_t *p)
 
 	found=0;
 	memcpy(p,&partDefUnknown,sizeof(partinfo_t));
-	id=LPCISP_ReadPartID(fd,&id1);
+	id=LPCISP_ReadPartID(fd,cfg,&id1);
 	p->id[0]=id;
 	p->id1=id1;
 	p->idIdx=0;
@@ -757,9 +757,9 @@ HIDDEN int GetPartInfo(int fd,partinfo_t *p)
 		if(found&&(p->flags&HAS_UID))
 		{
 			// if device identified and it supports UID
-			LPCISP_ReadPartUID(fd,p->uid);
+			LPCISP_ReadPartUID(fd,cfg,p->uid);
 		}
-		LPCISP_ReadBootCodeVersion(fd,&p->bootMajor,&p->bootMinor);
+		LPCISP_ReadBootCodeVersion(fd,cfg,&p->bootMajor,&p->bootMinor);
 		return(0);
 	}
 	return(-1);

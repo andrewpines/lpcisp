@@ -17,6 +17,18 @@ enum
 	PIN_nRTS,		// map this control to RTS, inverted
 };
 
+// device configuration is held as a structure to allow low level functions to be thread-safe
+// and not share any persistent variables.
+typedef struct
+{
+	int
+		resetPin,
+		ispPin,
+		echo;
+	unsigned char
+		lineTermination;
+}lpcispcfg_t;
+
 typedef struct
 {
 	unsigned int
@@ -73,19 +85,19 @@ typedef struct
 #define SKIP_0			(1<<6)	// when reading skip first word of flash
 
 void LPCISP_FixVectorTable(unsigned char *data);
-int LPCISP_SetBaudRate(int fd, int baud, int stop);
-int LPCISP_CopyRAMtoFlash(int fd, unsigned int src, unsigned int dest, unsigned int length);
-int LPCISP_BlankCheck(int fd, int startSector, int endSector);
+int LPCISP_SetBaudRate(int fd, lpcispcfg_t *cfg, int baud, int stop);
+int LPCISP_CopyRAMtoFlash(int fd, lpcispcfg_t *cfg, unsigned int src, unsigned int dest, unsigned int length);
+int LPCISP_BlankCheck(int fd, lpcispcfg_t *cfg, int startSector, int endSector);
 int LPCISP_GetSectorAddr(unsigned int addr, partinfo_t *p);
-int LPCISP_ResetTarget(int fd);
-void LPCISP_ExitISPMode(int fd);
-unsigned int LPCISP_ReadPartID(int fd, unsigned int *id1);
-int LPCISP_ReadPartUID(int fd, unsigned int *uid);
-int LPCISP_ReadBootCodeVersion(int fd, unsigned char *major, unsigned char *minor);
-int LPCISP_Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo);
-int LPCISP_ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int count,partinfo_t *partInfo);
-int LPCISP_WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo);
-int LPCISP_Sync(int fd, int baud, int clock, int retries, int setecho, int hold, int reset, int isp, partinfo_t *partInfo);
+int LPCISP_ResetTarget(int fd, lpcispcfg_t *cfg);
+void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg);
+unsigned int LPCISP_ReadPartID(int fd, lpcispcfg_t *cfg, unsigned int *id1);
+int LPCISP_ReadPartUID(int fd, lpcispcfg_t *cfg, unsigned int *uid);
+int LPCISP_ReadBootCodeVersion(int fd, lpcispcfg_t *cfg, unsigned char *major, unsigned char *minor);
+int LPCISP_Erase(int fd, lpcispcfg_t *cfg, int startSector, int endSector, int bank, partinfo_t *partInfo);
+int LPCISP_ReadFromTarget(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigned int addr, unsigned int count,partinfo_t *partInfo);
+int LPCISP_WriteToFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo);
+int LPCISP_Sync(int fd, lpcispcfg_t *cfg, int baud, int clock, int retries, int setecho, int hold, int reset, int isp, partinfo_t *partInfo);
 
 // read hex file into buffer, return pointer to buffer or NULL if error.
 // caller must free returned buffer.

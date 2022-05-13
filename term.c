@@ -35,7 +35,7 @@ static void ReadDevice(int fd,int theTTY)
 	}
 }
 
-static void WriteDevice(int theTTY,int fd)
+static void WriteDevice(int theTTY,int fd, lpcispcfg_t *cfg)
 // read the tty, send characters to the serial device
 {
 	char
@@ -63,7 +63,7 @@ static void WriteDevice(int theTTY,int fd)
 				if(buffer[idx]==resetCode)
 				{
 					// reset the target, if able
-					if(LPCISP_ResetTarget(fd)>=0)
+					if(LPCISP_ResetTarget(fd,cfg)>=0)
 					{
 						action=1;
 						ReportString(REPORT_INFO,"\n   resetting target...\n");
@@ -79,7 +79,7 @@ static void WriteDevice(int theTTY,int fd)
 	}
 }
 
-static void DoTasks(int fd)
+static void DoTasks(int fd, lpcispcfg_t *cfg)
 {
 	int
 		processID;
@@ -89,7 +89,7 @@ static void DoTasks(int fd)
 	{
 		if(processID)				// =0 for the child, =PID of the child for the parent
 		{
-			WriteDevice(TTYIN,fd);	// will run until done=true
+			WriteDevice(TTYIN,fd,cfg);	// will run until done=true
 			if(kill(processID,SIGKILL)<0)
 			{
 				ReportString(REPORT_ERROR,"terminal: failed to kill sub-task\n");
@@ -106,7 +106,7 @@ static void DoTasks(int fd)
 	}
 }
 
-int Terminal(int fd)
+int Terminal(int fd, lpcispcfg_t *cfg)
 {
 	struct termios
 		params,
@@ -124,7 +124,7 @@ int Terminal(int fd)
 		params.c_cc[VTIME]=1;			// or, 1/10th of a second
 		if(tcsetattr(TTYIN,TCSANOW,&params)>=0)
 		{
-			DoTasks(fd);
+			DoTasks(fd,cfg);
 			if(tcsetattr(TTYIN,TCSANOW,&oldParams)>=0)
 			{
 				ReportString(REPORT_INFO,"\n   exiting terminal...\n");
@@ -136,7 +136,7 @@ int Terminal(int fd)
 }
 
 #elif defined __WIN__	// Windows
-int Terminal(int fd)
+int Terminal(int fd, lpcispcfg_t *cfg)
 {
 	int
 		i,
@@ -162,7 +162,7 @@ int Terminal(int fd)
 			if(c==resetCode)
 			{
 				// reset the target, if able
-				if(LPCISP_ResetTarget(fd)>=0)
+				if(LPCISP_ResetTarget(fd,cfg)>=0)
 				{
 					ReportString(REPORT_INFO,"\n   resetting target...\n");
 				}

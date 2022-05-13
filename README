@@ -57,7 +57,7 @@ Following is a list of the available options:
 -reset ctrl     map the reset function to a serial device signal.  ctrl may be
                 one of dtr, ndtr, rts, or nrts.  lpcisp will assert (dtr, rts)
                 or negate (ndtr, nrts) the selected signal to reset the target.
-                Default is none.
+                default is none.
 
 -isp ctrl       map the ISP function to a serial device signal.  ctrl may be
                 one of dtr, ndtr, rts, or nrts.  lpcisp will assert (dtr, rts)
@@ -211,8 +211,51 @@ LINKING AS A LIBRARY
 liblpcisp.a can be linked to another application to add LPC programming ability.  Link liblpcisp.a
 and include the headers lpcisp.h and asyncserial.h.
 
+set where to send the report data (p=output stream)
+void LPCISP_ReportStream(FILE *p);
+
+set the report level (0=errors only, 1=minimum, 2=progress (default), 3=process debug, 4=full debug)
+void LPCISP_SetReportLevel(int level);
+
+read hex file into buffer, return pointer to buffer or NULL if error.  caller must free returned buffer.
+  fileName: name of hex file to load
+  start: pointer to start address (to be filled in)
+  length: pointer to length of image (to be filled in)
+unsigned char *LPCISP_ReadHexFile(const char *fileName,int *start,int *length);
+
 fix up vector table.  LPC devices require vector 7 to be the 2's comp of the arithmetic sum of vectors 0-6.
+  data: buffer of file image (e.g., returned by LPCISP_ReadHexFile)
 void LPCISP_FixVectorTable(unsigned char *data);
+
+open the device that we are going to communicate through, set it to 115200 baud, raw mode, return
+descriptor number on success, -1 on error
+int LPCISP_SERIAL_OpenDevice(const char *name)
+
+close the device that was opened by LPCISP_SERIAL_OpenDevice
+void LPCISP_SERIAL_CloseDevice(int fd);
+
+Attempt to read the given number of bytes before timeout (uS) occurs during any read attempt.
+Return the number of bytes received or -1 on error.  if maxBytes is zero will simply return zero.
+ fd -- file descriptor of serial device
+ buf -- pointer to buffer to be filled
+ maxBytes -- max number of bytes to read
+ timeout -- time to wait on any read, in microseconds
+int LPCISP_SERIAL_ReadBytes(int fd,unsigned char *buf,unsigned int maxBytes,unsigned int timeOut);
+
+Write bytes to device.  return number of bytes written (should be same as numBytes unless error).
+ fd -- file descriptor
+ buf -- pointer to buffer to be sent
+ numBytes -- number of bytes to send
+unsigned int LPCISP_SERIAL_WriteBytes(int fd,const unsigned char *buf,unsigned int numBytes);
+
+Set the state of the DTR handshake line
+void LPCISP_SERIAL_SetDTR(int fd, int state);
+
+Set the state of the RTS handshake line
+void LPCISP_SERIAL_SetRTS(int fd, int state);
+
+flush the serial device.
+void LPCISP_SERIAL_FlushDevice(int fd);
 
 set baud rate for communication with target device
   fd - file descriptor
@@ -227,6 +270,7 @@ test if range of sectors are blank.
 int LPCISP_BlankCheck(int fd, int startSector, int endSector);
 
 int LPCISP_GetSectorAddr(unsigned int addr, partinfo_t *p);
+
 int LPCISP_ResetTarget(int fd);
 
 exit ISP mode.  Reset device if possible, attempt to jump to address zero if reset is not configured.
@@ -241,18 +285,6 @@ int LPCISP_ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsign
 int LPCISP_WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo);
 int LPCISP_Sync(int fd, int baud, int clock, int retries, int setecho, int hold, int reset, int isp, partinfo_t *partInfo);
 
-read hex file into buffer, return pointer to buffer or NULL if error.  caller must free returned buffer.
-  fileName: name of hex file to load
-  start: pointer to start address (to be filled in)
-  length: pointer to length of image (to be filled in)
-unsigned char *LPCISP_ReadHexFile(const char *fileName,int *start,int *length);
-
-set where to send the report data (p=output stream)
-void LPCISP_ReportStream(FILE *p);
-
-set the report level (0=errors only, 1=minimum, 2=progress (default), 3=process debug, 4=full debug)
-void LPCISP_SetReportLevel(int level);
-
 
 
 
@@ -260,6 +292,9 @@ Basic implementation:
 
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include "lpcisp.h"
 #include "asyncserial.h"
 

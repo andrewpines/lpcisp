@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.1.3";
+	*version="0.2.0";
 
 static int
 	fd,
@@ -347,7 +347,7 @@ static int BinFileOpt(int *argc, char ***argv)
 
 		// get size (and existence) of file, allocate a buffer, read it in
 		fileName=**argv;
-		if(stat(**argv,&info)>=0)
+		if(stat(fileName,&info)>=0)
 		{
 			start=0;
 			length=info.st_size;
@@ -477,6 +477,8 @@ int main(int argc,char *argv[])
 			"Failed to get device info from target",
 			"Unknown LPC device",
 		};
+	lpcispcfg_t
+		cfg;
 
 	fail=0;
 	LPCISP_ReportStream(stdout);
@@ -558,7 +560,7 @@ int main(int argc,char *argv[])
 				// if term was the only action requested skip the synchronization step and drop directly to terminal
 				if(erase||data||(dumpLength>0)||!term)
 				{
-					fail=LPCISP_Sync(fd,baud,clock,retries,echo,hold,resetPin,ispPin,&partInfo);
+					fail=LPCISP_Sync(fd,&cfg,baud,clock,retries,echo,hold,resetPin,ispPin,&partInfo);
 					if(!fail)
 					{
 						// NULL deviceName matches anything
@@ -617,7 +619,7 @@ int main(int argc,char *argv[])
 						fail=((startSector<0)||(endSector<0));
 						if(!fail)
 						{
-							fail=(LPCISP_Erase(fd,startSector,endSector,0,&partInfo)<0);	// @@@ only support bank zero for now
+							fail=(LPCISP_Erase(fd,&cfg,startSector,endSector,0,&partInfo)<0);	// @@@ only support bank zero for now
 						}
 						if(fail)
 						{
@@ -637,7 +639,7 @@ int main(int argc,char *argv[])
 						// write image to flash
 						if(burn)
 						{
-							fail=(LPCISP_WriteToFlash(fd,data,start,length,&partInfo)<0);
+							fail=(LPCISP_WriteToFlash(fd,&cfg,data,start,length,&partInfo)<0);
 							ReportString(REPORT_INFO,"%s\n",!fail?"write complete":"failed to write\n");
 						}
 
@@ -674,7 +676,7 @@ int main(int argc,char *argv[])
 							for(addr=start;!fail&&(addr<start+length);addr+=256)
 							{
 								// read remaining bytes, up to 256 (must be multiple of four)
-								fail=(LPCISP_ReadFromTarget(fd,buffer,addr,MIN((length-(addr-start)+3)&~3,256),&partInfo)<0);
+								fail=(LPCISP_ReadFromTarget(fd,&cfg,buffer,addr,MIN((length-(addr-start)+3)&~3,256),&partInfo)<0);
 								if(!fail)
 								{
 									for(i=0;!fail&&(i<MIN(length-(addr-start),256));i++)
@@ -705,7 +707,7 @@ int main(int argc,char *argv[])
 							// dumpAddr and dumpLength must be word-aligned
 							dumpAddr&=~3;
 							dumpLength=(dumpLength+3)&~3;
-							fail=(LPCISP_ReadFromTarget(fd,data,dumpAddr,dumpLength,&partInfo)<0);
+							fail=(LPCISP_ReadFromTarget(fd,&cfg,data,dumpAddr,dumpLength,&partInfo)<0);
 							if(!fail)
 							{
 								while(i<dumpLength)
@@ -762,7 +764,7 @@ int main(int argc,char *argv[])
 					ReportString(REPORT_ERROR,"ERROR: unknown part, cannot perform operations on it\n");
 				}
 			}
-			LPCISP_ExitISPMode(fd);
+			LPCISP_ExitISPMode(fd,&cfg);
 
 			if(!fail&&term)
 			{
@@ -773,7 +775,7 @@ int main(int argc,char *argv[])
 				}
 				if(!fail)
 				{
-					fail=!Terminal(fd);
+					fail=!Terminal(fd,&cfg);
 				}
 			}
 
