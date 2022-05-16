@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.2.1";
+	*version="0.2.2";
 
 static int
 	fd,
@@ -276,7 +276,7 @@ static int DumpOpt(int *argc, char ***argv)
 		*argv=(*argv)+1;
 		*argc=(*argc)-2;
 		dumpSize=1;
-		if(*argc&&(**argv[0]!='-'))
+		if((*argc>1)&&(**argv[0]!='-'))
 		{
 			dumpSize=strtol(**argv,NULL,0);
 			*argv=(*argv)+1;
@@ -759,7 +759,7 @@ int main(int argc,char *argv[])
 									}
 									for(j=0;(j<lineLen)&&((i+j)<dumpLength);j++)
 									{
-										ReportString(REPORT_MINIMUM,"%c",(data[i+j]>' '&&data[i+j]<='~')?data[i+j]:'.');
+										ReportString(REPORT_MINIMUM,"%c",(data[i+j]>=' '&&data[i+j]<='~')?data[i+j]:'.');
 									}
 									i+=lineLen;
 									dumpAddr+=lineLen;
