@@ -103,6 +103,15 @@
 	    added LPCISP_FixVectorTable() so applications which link lpcisp as a library can more easily patch the vector table
 	  	added parts: LPC1345FHN33, LPC1345FBD48, LPC1346FHN33, LPC1346FBD48, LPC1347FHN33, LPC1347FBD48, LPC1347FBD64, LPC1315FHN33, LPC1315FBD48, LPC1316FHN33, LPC1316FBD48, LPC1317FHN33, LPC1317FBD48, LPC1317FBD64
 	  	report device ID of unknown parts
+	 0.2.2 -- 16 May 2022
+	  	added multi-thread support for when accessed as a library
+	  	corrected binary file handling
+	  	corrected optional size argument for dump command
+	 0.2.3 --
+	    write only as many bytes as needed in WriteToRAM(), was always writing flashBlockSize
+	    corrected LPCISP_ExitISPMode when reset pin isn't mapped -- now writes code to RAM which sets the SYSRESETREQ bit in AIRCR, forcing system reset
+	    reduced delays while trying to sync
+	    properly report bytes with b7 set as two hex digits (no leading 'f's)
 
 	to do:
 		add support for lots more parts

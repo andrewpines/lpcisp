@@ -18,9 +18,9 @@
 //  LF -- Unix
 //  CRLF -- Windows
 // Without getting into a holy war over which is optimal, the reality is that both CRLF and LF exist in the world and both should
-// be supported.  ideally NXP would have engineered all parts to expect LF as the terminator and would ignore any CRs, since even
+// be supported.  Ideally NXP would have engineered all parts to expect LF as the terminator and would ignore any CRs, since even
 // Apple has abandonded CR-only line termination.  this would mean that CRLF or LF would work equally well, plus switching to
-// binary would always work as expected because it would skip over any CRs and terminate on the LF.  No such luck.  inspection
+// binary would always work as expected because it would skip over any CRs and terminate on the LF.  No such luck.  Inspection
 // reveals that they couldn't even manage to be consistent within a single part.  Here are some examples of tested components:
 //   LPC1788: consistently accepts CR, LF, or CRLF; returns either CRLF or echos the termination that was sent to it (context-dependent)
 //   LPC1313: accepts CRLF; sometimes returns CR (after 'Synchronized'), other times returns CRLF

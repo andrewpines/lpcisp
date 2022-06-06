@@ -13,8 +13,10 @@ target processor.  All options are preceded by a dash.  To get the
 current complete list of options invoke the program with no arguments.
 
 Please note:
-        1) on exit the target is reset.  If reset isn't mapped the GO command is invoked to
-        	attempt to jump to address 0x00000000.
+        1) on exit the target is reset.  If reset isn't mapped a SYSRESETREQ is invoked.
+        	Due to some ambiguity as to what the boot loader manages to respond after
+        	the "GO" command and before the part resets a couple of unexpected bytes
+        	may be received by the target application on startup.
         2) the set of supported devices is incomplete and some may be inaccurate.  Adding
                 more parts is simply a matter of adding lines to the list.  See partdesc.c.
                 Please forward changes and additions via:
@@ -79,9 +81,7 @@ Following is a list of the available options:
                 12000 (12MHz).
 
 -retry num      set the number of times to attempt to sync to the target device.
-                each attempt times out after about one second so this is
-                essentially the number of seconds to try to connect to the target
-                before aborting.  Default is 25.
+                Default is 25.
 
 -bin filename   load a binary file to be written to or compared against the flash
                 memory of the target device.  Always loads at address 0x00000000.
