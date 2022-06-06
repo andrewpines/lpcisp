@@ -3,13 +3,17 @@
 	lpcisp -- NXP LPCxxxx ISP
 
 	see ChangeLog for version information.
+	
+	to do:
+		fix ReadString() so it can't overrun the buffer (need to pass buffer length)
+		properly read back first 64 or 256 bytes of LPC17xx parts
 
 */
 
 #include "includes.h"
 
 static const char
-	*version="0.2.3";
+	*version="0.2.4";
 
 static int
 	fd,

@@ -16,7 +16,7 @@ Please note:
         1) on exit the target is reset.  If reset isn't mapped a SYSRESETREQ is invoked.
         	Due to some ambiguity as to what the boot loader manages to respond after
         	the "GO" command and before the part resets a couple of unexpected bytes
-        	may be received by the target application on startup.
+        	may be received by the host application on startup.
         2) the set of supported devices is incomplete and some may be inaccurate.  Adding
                 more parts is simply a matter of adding lines to the list.  See partdesc.c.
                 Please forward changes and additions via:

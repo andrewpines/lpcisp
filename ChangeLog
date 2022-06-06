@@ -107,11 +107,15 @@
 	  	added multi-thread support for when accessed as a library
 	  	corrected binary file handling
 	  	corrected optional size argument for dump command
-	 0.2.3 --
+	 0.2.3 -- 6 June 2022
 	    write only as many bytes as needed in WriteToRAM(), was always writing flashBlockSize
 	    corrected LPCISP_ExitISPMode when reset pin isn't mapped -- now writes code to RAM which sets the SYSRESETREQ bit in AIRCR, forcing system reset
 	    reduced delays while trying to sync
 	    properly report bytes with b7 set as two hex digits (no leading 'f's)
+	 0.2.4 -- 6 June 2022
+	 	changed array of code to send to force SYSRESETREQ to bytes to be platform-agnostic
+	 	disable interrupts before invoking code to force SYSRESETREQ
+	 	endless loop after SYSRESETREQ (wait for reset)
 
 	to do:
 		add support for lots more parts

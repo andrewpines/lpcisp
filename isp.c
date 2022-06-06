@@ -11,7 +11,7 @@
 
 //============ private functions ==============================================
 
-static int GetCheckSum(unsigned char *data, int length)
+static int GetCheckSum(const unsigned char *data, int length)
 // return the sum of bytes in a buffer
 {
 	int
@@ -518,7 +518,7 @@ static int Sync(int fd, lpcispcfg_t *cfg, int freq,int retries,int hold)
 	return(-1);
 }
 
-static int WriteRAMAddress(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigned int addr, unsigned int count)
+static int WriteRAMAddress(int fd, lpcispcfg_t *cfg, const unsigned char *data, unsigned int addr, unsigned int count)
 // prepare to write to RAM.  send the address and the count.  return
 // 0 on success, -1 on error.
 {
@@ -553,7 +553,7 @@ static int WriteRAMAddress(int fd, lpcispcfg_t *cfg, unsigned char *data, unsign
 	return(-1);
 }
 
-static int WriteToRAM(int fd, lpcispcfg_t *cfg,unsigned int addr, unsigned int length, unsigned char *data, partinfo_t *partInfo)
+static int WriteToRAM(int fd, lpcispcfg_t *cfg,unsigned int addr, unsigned int length, const unsigned char *data, partinfo_t *partInfo)
 // write a block of data to RAM.
 //   fd -- serial device
 //   cfg - lpcisp instance
@@ -711,7 +711,7 @@ void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg, partinfo_t *p)
 {
 	char
 		buffer[256];
-	static const uint16_t
+	static const unsigned char
 		reset[]=
 		{
 			// code to force system reset
@@ -721,12 +721,14 @@ void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg, partinfo_t *p)
 			//  b14:3 - reserved
 			//  b2 - SYSRESETREQ (1=request system level reset)
 			//  b1 - VECTCLRACTIVE, reserved (must write 0)
-			0x4a01,			// ldr	r2, [pc, #4]
-			0x4b02,			// ldr	r3, [pc, #8]
-			0x601a,			// str	r2, [r3, #0]
-			0x0000,			// .short	0x0000
-			0x0004,0x05fa,	// .word	0x05fa0004
-			0xed0c,0xe000,	// .word	0xe000ed0c
+			0x72,0xb6,				// cpsid i
+			0x02,0x4a,				// ldr	r2, [pc, #4]
+			0x02,0x4b,				// ldr	r3, [pc, #8]
+			0x1a,0x60,				// str	r2, [r3, #0]
+			0xfe,0xe7,				// b.n	a
+			0x00,0x00,				// align
+			0x04,0x00,0xfa,0x05,	// .word	0x05fa0004
+			0x0c,0xed,0x00,0xe0,	// .word	0xe000ed0c
 		};
 
 	ReportString(REPORT_DEBUG_PROCESS,"exiting ISP mode\n");
@@ -739,7 +741,7 @@ void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg, partinfo_t *p)
 		ReportString(REPORT_DEBUG_PROCESS,"reset not mapped, attempting system reset request\n");
 
 		// write code sequence to RAM to load Application Interrupt and Reset Control Register with bit to force reset
-		if(WriteToRAM(fd,cfg,p->flashBlockRAMBase,(sizeof(reset)+3)&~3,(unsigned char *)reset,p))
+		if(WriteToRAM(fd,cfg,p->flashBlockRAMBase,(sizeof(reset)+3)&~3,reset,p))
 		{
 			// send command to jump to the code we just wrote, thumb mode.
 			// the target returns '0' on success but also resets so some abiguity exists as to what happens next.
