@@ -9,7 +9,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.2.2";
+	*version="0.2.3";
 
 static int
 	fd,
@@ -775,7 +775,7 @@ int main(int argc,char *argv[])
 					ReportString(REPORT_ERROR,"ERROR: unknown part, cannot perform operations on it\n");
 				}
 			}
-			LPCISP_ExitISPMode(fd,&cfg);
+			LPCISP_ExitISPMode(fd,&cfg,&partInfo);
 
 			if(!fail&&term)
 			{

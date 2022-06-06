@@ -458,7 +458,7 @@ static void EnterISPMode(int fd, lpcispcfg_t *cfg, int hold)
 	LPCISP_ResetTarget(fd,cfg);
 	
 	// allow target processor to boot
-	usleep(100000);
+	usleep(10000);
 
 	// if not asked to hold ISP low, set it back high here
 	if(!hold)
@@ -518,6 +518,160 @@ static int Sync(int fd, lpcispcfg_t *cfg, int freq,int retries,int hold)
 	return(-1);
 }
 
+static int WriteRAMAddress(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigned int addr, unsigned int count)
+// prepare to write to RAM.  send the address and the count.  return
+// 0 on success, -1 on error.
+{
+	char
+		buffer[256];
+
+	if((count&0x03)==0)
+	{
+		sprintf(buffer,"W %d %d",addr,count);
+		switch(SendCommand(fd,cfg,buffer,buffer,"0"))
+		{
+			case 1:
+				// success, may start sending data
+				ReportString(REPORT_DEBUG_PROCESS,"%s: set address = 0x%04x, count = %d\n",__FUNCTION__,addr,count);
+				return(0);
+			case 0:
+				// got a response other than '0', @@@ handle error
+				// @@@ possible values are ADDR_ERROR, ADDR_NOT_MAPPED, COUNT_ERROR,
+				// @@@ PARAM_ERROR, CODE_READ_PROTECTION_ENABLED
+				ReportString(REPORT_ERROR,"write RAM address: %s\n",GetErrorString(buffer));
+				break;
+			default:
+				// no response, handle error
+				ReportString(REPORT_ERROR,"%s: no response\n",__FUNCTION__);
+				break;
+		}
+	}
+	else
+	{
+		ReportString(REPORT_ERROR,"%s: count (%d) must be a multiple of four\n",__FUNCTION__,count);
+	}
+	return(-1);
+}
+
+static int WriteToRAM(int fd, lpcispcfg_t *cfg,unsigned int addr, unsigned int length, unsigned char *data, partinfo_t *partInfo)
+// write a block of data to RAM.
+//   fd -- serial device
+//   cfg - lpcisp instance
+//   addr -- start address of RAM to write in device (must be a multiple of four)
+//   length -- number of bytes to write (must be a multiple of four)
+//   data -- pointer to data to be written
+//   partInfo -- description of detected device
+// return 1 on success, 0 on error
+{
+	int
+		fail;
+	unsigned int
+		bytesThisBlock,
+		bytesRemaining,
+		n,
+		resend,
+		offset,
+		cs;
+	char
+		buffer[64];
+
+	fail=0;
+	if((fd>=0)&&data&&((addr&3)==0)&&((length&3)==0))
+	{
+		// everything appears valid, try to write data to RAM
+		resend=5;
+		while(!fail&&length&&resend)
+		{
+			// set the address and count (never write more than 128 bytes in a single block)
+			bytesThisBlock=MIN(length,512);
+			bytesRemaining=bytesThisBlock;
+			offset=0;
+			if(resend==5)
+			{
+				fail=(WriteRAMAddress(fd,cfg,data,addr,bytesThisBlock)<0);
+			}
+			if(!fail)
+			{
+				cs=0;
+				while(bytesRemaining&&!fail)
+				{
+					// write up to 45 bytes in a line
+					n=MIN(bytesRemaining,45);
+					cs+=GetCheckSum(&data[offset],n);
+					if(partInfo->flags&UUENCODE)
+					{
+						uuencode(&data[offset],(unsigned char *)buffer,n);
+						fail=(SendCommandNoResponse(fd,cfg,buffer)<0);
+					}
+					else
+					{
+						fail=!WriteBuffer(fd,&data[offset],n);
+					}
+					if(!fail)
+					{
+						bytesRemaining-=n;
+						offset+=n;
+					}
+				}
+			}
+			if(partInfo->flags&UUENCODE)
+			{
+				if(!fail)
+				{
+					// seem to have written up to 128 bytes okay, send the checksum
+					sprintf(buffer,"%d",cs);
+					fail=(SendCommandNoResponse(fd,cfg,buffer)<0);
+					if(!fail)
+					{
+						do
+						{
+							n=ReadString(fd,cfg,buffer);
+							// the response is very inconsistent.  sometimes it echos even when echo is disabled,
+							// sometimes it doesn't.  pull lines until we see either "OK", "RESEND", or timeout.
+							fail=(n==0);
+							if(!fail)
+							{
+								if(strncmp(buffer,"OK",2)==0)
+								{
+									// success, reset the resend counter for the next block, break out of here
+									resend=5;
+									data+=bytesThisBlock;
+									addr+=bytesThisBlock;
+									length-=bytesThisBlock;
+									n=0;
+								}
+								else if(strncmp(buffer,"RESEND",6)==0)
+								{
+									// target is asking to resend the block, break out of here and try again if resend hasn't counted out.
+									resend--;
+									n=0;
+								}
+								else
+								{
+									// else ignore anything else that came back
+									ReportString(REPORT_DEBUG_FULL,"unknown response \"%s\"\n",buffer);
+								}
+							}
+							else
+							{
+								ReportString(REPORT_DEBUG_FULL,"no response\n");
+							}
+						}while(n);
+					}
+				}
+			}
+			else
+			{
+				data+=bytesThisBlock;
+				addr+=bytesThisBlock;
+				length-=bytesThisBlock;
+				n=0;
+			}
+		}
+	}
+	return(!fail);
+}
+
 //============ public functions ==============================================
 
 void LPCISP_FixVectorTable(unsigned char *data)
@@ -545,18 +699,35 @@ int LPCISP_ResetTarget(int fd, lpcispcfg_t *cfg)
 	if(cfg->resetPin!=PIN_NONE)
 	{
 		SetReset(fd,cfg,0);
-		usleep(1000000);
-		usleep(100000);
+		usleep(10000);
+		usleep(10000);
 		SetReset(fd,cfg,1);
 		return(0);
 	}
 	return(-1);
 }
 
-void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg)
+void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg, partinfo_t *p)
 {
 	char
-		response[256];
+		buffer[256];
+	static const uint16_t
+		reset[]=
+		{
+			// code to force system reset
+			// 0x05FA0004:
+			//  b31:16 - VECTKEY, On writes, write 0x05FA to VECTKEY, otherwise the write is ignored.
+			//  b15 - endianess (0=little endian)
+			//  b14:3 - reserved
+			//  b2 - SYSRESETREQ (1=request system level reset)
+			//  b1 - VECTCLRACTIVE, reserved (must write 0)
+			0x4a01,			// ldr	r2, [pc, #4]
+			0x4b02,			// ldr	r3, [pc, #8]
+			0x601a,			// str	r2, [r3, #0]
+			0x0000,			// .short	0x0000
+			0x0004,0x05fa,	// .word	0x05fa0004
+			0xed0c,0xe000,	// .word	0xe000ed0c
+		};
 
 	ReportString(REPORT_DEBUG_PROCESS,"exiting ISP mode\n");
 
@@ -565,8 +736,26 @@ void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg)
 	if(LPCISP_ResetTarget(fd,cfg)<0)
 	{
 		// reset is not mapped; use GO command here to try to start program
-		ReportString(REPORT_DEBUG_PROCESS,"reset not mapped, attempting to jump to 0x00000000\n");
-		SendCommand(fd,cfg,"G 0 A",response,"0");
+		ReportString(REPORT_DEBUG_PROCESS,"reset not mapped, attempting system reset request\n");
+
+		// write code sequence to RAM to load Application Interrupt and Reset Control Register with bit to force reset
+		if(WriteToRAM(fd,cfg,p->flashBlockRAMBase,(sizeof(reset)+3)&~3,(unsigned char *)reset,p))
+		{
+			// send command to jump to the code we just wrote, thumb mode.
+			// the target returns '0' on success but also resets so some abiguity exists as to what happens next.
+			// testing with an LPC812 shows the '0' followed by a corrupt byte then the application code runs.  If we 
+			// try to wait for a proper response (which likely won't come) then the first bytes from the application
+			// are handled as if they were the response from the boot loader.  If we don't wait for a response then
+			// the '0' and maybe one more byte will be received by the application.  Neither approach is perfect but
+			// it's probably better to let the application deal with receiving a couple of unexpected bytes right
+			// after reset.  So, we don't wait for a response and just exit here.
+			sprintf(buffer,"G %d T",p->flashBlockRAMBase);
+			SendCommandNoResponse(fd,cfg,buffer);
+		}
+		else
+		{
+			ReportString(REPORT_ERROR,"failed to write reset code\n");
+		}
 	}
 }
 
@@ -858,41 +1047,6 @@ int LPCISP_ReadBootCodeVersion(int fd, lpcispcfg_t *cfg, unsigned char *major, u
 	return(-1);
 }
 
-static int WriteRAMAddress(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigned int addr, unsigned int count)
-// prepare to write to RAM.  send the address and the count.  return
-// 0 on success, -1 on error.
-{
-	char
-		buffer[256];
-
-	if((count&0x03)==0)
-	{
-		sprintf(buffer,"W %d %d",addr,count);
-		switch(SendCommand(fd,cfg,buffer,buffer,"0"))
-		{
-			case 1:
-				// success, may start sending data
-				ReportString(REPORT_DEBUG_PROCESS,"%s: set address = 0x%04x, count = %d\n",__FUNCTION__,addr,count);
-				return(0);
-			case 0:
-				// got a response other than '0', @@@ handle error
-				// @@@ possible values are ADDR_ERROR, ADDR_NOT_MAPPED, COUNT_ERROR,
-				// @@@ PARAM_ERROR, CODE_READ_PROTECTION_ENABLED
-				ReportString(REPORT_ERROR,"write RAM address: %s\n",GetErrorString(buffer));
-				break;
-			default:
-				// no response, handle error
-				ReportString(REPORT_ERROR,"%s: no response\n",__FUNCTION__);
-				break;
-		}
-	}
-	else
-	{
-		ReportString(REPORT_ERROR,"%s: count (%d) must be a multiple of four\n",__FUNCTION__,count);
-	}
-	return(-1);
-}
-
 int LPCISP_ReadFromTarget(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigned int addr, unsigned int count, partinfo_t *partInfo)
 // read a block of data from RAM.
 {
@@ -988,125 +1142,6 @@ int LPCISP_ReadFromTarget(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigne
 
 }
 
-static int WriteToRAM(int fd, lpcispcfg_t *cfg, unsigned char *data,partinfo_t *partInfo)
-// write a block of data to RAM.
-//   data -- pointer to data
-//   addr -- start address in device (must be a multiple of four)
-//   length -- number of bytes to write (must be a multiple of four)
-// return 1 on success, 0 on error
-{
-	int
-		fail;
-	unsigned int
-		addr,
-		length,
-		bytesThisBlock,
-		bytesRemaining,
-		n,
-		resend,
-		offset,
-		cs;
-	char
-		buffer[64];
-
-	addr=partInfo->flashBlockRAMBase;
-	length=partInfo->flashBlockSize;
-	fail=0;
-	if((fd>=0)&&data&&((addr&3)==0)&&((length&3)==0))
-	{
-		// everything appears valid, try to write data to RAM
-		resend=5;
-		while(!fail&&length&&resend)
-		{
-			// set the address and count (never write more than 128 bytes in a single block)
-			bytesThisBlock=MIN(length,512);
-			bytesRemaining=bytesThisBlock;
-			offset=0;
-			if(resend==5)
-			{
-				fail=(WriteRAMAddress(fd,cfg,data,addr,bytesThisBlock)<0);
-			}
-			if(!fail)
-			{
-				cs=0;
-				while(bytesRemaining&&!fail)
-				{
-					// write up to 45 bytes in a line
-					n=MIN(bytesRemaining,45);
-					cs+=GetCheckSum(&data[offset],n);
-					if(partInfo->flags&UUENCODE)
-					{
-						uuencode(&data[offset],(unsigned char *)buffer,n);
-						fail=(SendCommandNoResponse(fd,cfg,buffer)<0);
-					}
-					else
-					{
-						fail=!WriteBuffer(fd,&data[offset],n);
-					}
-					if(!fail)
-					{
-						bytesRemaining-=n;
-						offset+=n;
-					}
-				}
-			}
-			if(partInfo->flags&UUENCODE)
-			{
-				if(!fail)
-				{
-					// seem to have written up to 128 bytes okay, send the checksum
-					sprintf(buffer,"%d",cs);
-					fail=(SendCommandNoResponse(fd,cfg,buffer)<0);
-					if(!fail)
-					{
-						do
-						{
-							n=ReadString(fd,cfg,buffer);
-							// the response is very inconsistent.  sometimes it echos even when echo is disabled,
-							// sometimes it doesn't.  pull lines until we see either "OK", "RESEND", or timeout.
-							fail=(n==0);
-							if(!fail)
-							{
-								if(strncmp(buffer,"OK",2)==0)
-								{
-									// success, reset the resend counter for the next block, break out of here
-									resend=5;
-									data+=bytesThisBlock;
-									addr+=bytesThisBlock;
-									length-=bytesThisBlock;
-									n=0;
-								}
-								else if(strncmp(buffer,"RESEND",6)==0)
-								{
-									// target is asking to resend the block, break out of here and try again if resend hasn't counted out.
-									resend--;
-									n=0;
-								}
-								else
-								{
-									// else ignore anything else that came back
-									ReportString(REPORT_DEBUG_FULL,"unknown response \"%s\"\n",buffer);
-								}
-							}
-							else
-							{
-								ReportString(REPORT_DEBUG_FULL,"no response\n");
-							}
-						}while(n);
-					}
-				}
-			}
-			else
-			{
-				data+=bytesThisBlock;
-				addr+=bytesThisBlock;
-				length-=bytesThisBlock;
-				n=0;
-			}
-		}
-	}
-	return(!fail);
-}
 
 int LPCISP_WriteToFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo)
 // write 256 bytes of flash at a time (the minimum block size)
@@ -1136,7 +1171,7 @@ int LPCISP_WriteToFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned in
 			bytesToWrite=MIN(length,partInfo->flashBlockSize);
 			memcpy(buffer,data,bytesToWrite);
 			memset(&buffer[bytesToWrite],0xff,partInfo->flashBlockSize-bytesToWrite);
-			if(WriteToRAM(fd,cfg,buffer,partInfo))
+			if(WriteToRAM(fd,cfg,partInfo->flashBlockRAMBase,(bytesToWrite+3)&~3,buffer,partInfo))
 			{
 				ReportString(REPORT_DEBUG_PROCESS,"copied %d bytes into RAM for 0x%08x\n",bytesToWrite,addr);
 				// prepare the sector for writing

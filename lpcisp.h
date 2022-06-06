@@ -90,7 +90,7 @@ int LPCISP_CopyRAMtoFlash(int fd, lpcispcfg_t *cfg, unsigned int src, unsigned i
 int LPCISP_BlankCheck(int fd, lpcispcfg_t *cfg, int startSector, int endSector);
 int LPCISP_GetSectorAddr(unsigned int addr, partinfo_t *p);
 int LPCISP_ResetTarget(int fd, lpcispcfg_t *cfg);
-void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg);
+void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg, partinfo_t *p);
 unsigned int LPCISP_ReadPartID(int fd, lpcispcfg_t *cfg, unsigned int *id1);
 int LPCISP_ReadPartUID(int fd, lpcispcfg_t *cfg, unsigned int *uid);
 int LPCISP_ReadBootCodeVersion(int fd, lpcispcfg_t *cfg, unsigned char *major, unsigned char *minor);
