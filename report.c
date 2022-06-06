@@ -97,7 +97,7 @@ HIDDEN void ReportCharCtrl(int level, const char c)
 	}
 	else
 	{
-		ReportString(level,"<%02x>",(unsigned)c);
+		ReportString(level,"<%02x>",(unsigned char)c);
 	}
 }
 
