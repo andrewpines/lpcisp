@@ -13,7 +13,7 @@
 #include "includes.h"
 
 static const char
-	*version="0.2.4";
+	*version="0.2.5";
 
 static int
 	fd,

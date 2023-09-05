@@ -408,11 +408,11 @@ const partinfo_t
 		// the following are from UM10601, LPC800 User manual, Rev. 1.3, 22 July 2013.
 		//																										# of							flash				block	block RAM
 		//		id			alt. ID				name															sectors							banks	ram			size	address		flags
-		{	{ 0x00008100,	~0			},	~0,	"LPC810M021FN8",												4,			sectorMap1k,		1,		1024,		256,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008110,	~0			},	~0,	"LPC811M001JDH16",												8,			sectorMap1k,		1,		2048,		1024,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008120,	~0			},	~0,	"LPC812M101JDH16",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008121,	~0			},	~0,	"LPC812M101JD20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
-		{	{ 0x00008122,	~0			},	~0,	"LPC812M101JDH20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF	},
+		{	{ 0x00008100,	~0			},	~0,	"LPC810M021FN8",												4,			sectorMap1k,		1,		1024,		256,	0x10000300,	TERM_CRLF|HAS_UID	},
+		{	{ 0x00008110,	~0			},	~0,	"LPC811M001JDH16",												8,			sectorMap1k,		1,		2048,		1024,	0x10000300,	TERM_CRLF|HAS_UID	},
+		{	{ 0x00008120,	~0			},	~0,	"LPC812M101JDH16",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF|HAS_UID	},
+		{	{ 0x00008121,	~0			},	~0,	"LPC812M101JD20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF|HAS_UID	},
+		{	{ 0x00008122,	~0			},	~0,	"LPC812M101JDH20",												16,			sectorMap1k,		1,		4096,		1024,	0x10000300,	TERM_CRLF|HAS_UID	},
 
 		// the following are from UM10800, LPC82x User manual, Rev. 1.2, 5 October 2016.
 		//																										# of							flash				block	block RAM

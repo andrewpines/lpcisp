@@ -94,7 +94,8 @@ static unsigned char *ParseRecord(unsigned char *buffer, char *line, int *baseAd
 						{
 							// move existing data to end of buffer, clear new space at front to 0xff (erased flash)
 							memmove(&p[*baseAddr-recAddr],p,oldSize);
-							memset(&p,0xff,*baseAddr-recAddr);
+							memset(p,0xff,*baseAddr-recAddr);
+							*baseAddr=recAddr;
 						}
 						else
 						{

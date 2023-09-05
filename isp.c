@@ -722,8 +722,8 @@ void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg, partinfo_t *p)
 			//  b2 - SYSRESETREQ (1=request system level reset)
 			//  b1 - VECTCLRACTIVE, reserved (must write 0)
 			0x72,0xb6,				// cpsid i
-			0x02,0x4a,				// ldr	r2, [pc, #4]
-			0x02,0x4b,				// ldr	r3, [pc, #8]
+			0x02,0x4a,				// ldr	r2, [pc, #2]
+			0x02,0x4b,				// ldr	r3, [pc, #2]
 			0x1a,0x60,				// str	r2, [r3, #0]
 			0xfe,0xe7,				// b.n	a
 			0x00,0x00,				// align

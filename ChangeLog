@@ -116,6 +116,9 @@
 	 	changed array of code to send to force SYSRESETREQ to bytes to be platform-agnostic
 	 	disable interrupts before invoking code to force SYSRESETREQ
 	 	endless loop after SYSRESETREQ (wait for reset)
+	 0.2.5 -- 6 June 2022
+	 	corrected parsing of hex records in ParseRecord() to allow records to be out of order
+	 	corrected definitions for some lpc81x parts
 
 	to do:
 		add support for lots more parts
