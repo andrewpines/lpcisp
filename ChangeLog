@@ -119,6 +119,9 @@
 	 0.2.5 -- 6 June 2022
 	 	corrected parsing of hex records in ParseRecord() to allow records to be out of order
 	 	corrected definitions for some lpc81x parts
+	 0.2.6 -- 27 October 2023
+	 	added LPCISP_VerifyFlash(), integrated into main
+		send flash block size padded with 0xff (previously didn't blank unused portions of partial blocks which caused writes of left-over data in buffer)
 
 	to do:
 		add support for lots more parts

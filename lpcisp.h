@@ -96,6 +96,7 @@ int LPCISP_ReadPartUID(int fd, lpcispcfg_t *cfg, unsigned int *uid);
 int LPCISP_ReadBootCodeVersion(int fd, lpcispcfg_t *cfg, unsigned char *major, unsigned char *minor);
 int LPCISP_Erase(int fd, lpcispcfg_t *cfg, int startSector, int endSector, int bank, partinfo_t *partInfo);
 int LPCISP_ReadFromTarget(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigned int addr, unsigned int count,partinfo_t *partInfo);
+int LPCISP_VerifyFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned int start,unsigned int length,partinfo_t *partInfo);
 int LPCISP_WriteToFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo);
 int LPCISP_Sync(int fd, lpcispcfg_t *cfg, int baud, int clock, int retries, int setecho, int hold, int reset, int isp, partinfo_t *partInfo);
 

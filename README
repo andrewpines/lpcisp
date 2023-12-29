@@ -275,7 +275,7 @@ int LPCISP_ResetTarget(int fd);
 
 exit ISP mode.  Reset device if possible, attempt to jump to address zero if reset is not configured.
   fd - file descriptor
-void LPCISP_ExitISPMode(int fd);
+void LPCISP_ExitISPMode(int fd, lpcispcfg_t *cfg, partinfo_t *p);
 
 unsigned int LPCISP_ReadPartID(int fd, unsigned int *id1);
 int LPCISP_ReadPartUID(int fd, unsigned int *uid);
@@ -283,8 +283,7 @@ int LPCISP_ReadBootCodeVersion(int fd, unsigned char *major, unsigned char *mino
 int LPCISP_Erase(int fd, int startSector, int endSector, int bank, partinfo_t *partInfo);
 int LPCISP_ReadFromTarget(int fd, unsigned char *data, unsigned int addr, unsigned int count,partinfo_t *partInfo);
 int LPCISP_WriteToFlash(int fd,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo);
-int LPCISP_Sync(int fd, int baud, int clock, int retries, int setecho, int hold, int reset, int isp, partinfo_t *partInfo);
-
+int LPCISP_Sync(int fd, lpcispcfg_t *cfg, int baud, int clock, int retries, int setecho, int hold, int reset, int isp, partinfo_t *partInfo)
 
 
 
@@ -313,6 +312,8 @@ int WriteLPCDevice(const char *hexFileName, const char *deviceName)
 		partInfo;
 	unsigned char
 		*buffer;
+	lpcispcfg_t
+		cfg;
 
 	LPCISP_ReportStream(stdout);	/* set where to send report text */
 	LPCISP_SetReportLevel(2);	/* set report level (0=errors only, 1=minimum, 2=progress (default), 3=process debug, 4=full debug) */
@@ -327,22 +328,22 @@ int WriteLPCDevice(const char *hexFileName, const char *deviceName)
 		fd=LPCISP_SERIAL_OpenDevice(deviceName);	/* open the serial device */
 		if(fd>=0)
 		{
-			if(LPCISP_Sync(fd,115200,12000,5,0,1,PIN_nDTR,PIN_nRTS,&partInfo)>=0)	/* synchronize with the device */
+			if(LPCISP_Sync(fd,&cfg,115200,12000,5,0,1,PIN_nDTR,PIN_nRTS,&partInfo)>=0)	/* synchronize with the device */
 			{
 				startSector=LPCISP_GetSectorAddr(start,&partInfo);		/* find start and end sectors which cover loaded image.  to erase entire device */
 				endSector=LPCISP_GetSectorAddr(start+length,&partInfo);		/* set startSector=0 and endSector=partInfo.numSectors-1. */
 
-				if(LPCISP_Erase(fd,startSector,endSector,0,&partInfo)==0)	/* erase range */
+				if(LPCISP_Erase(fd,&cfg,startSector,endSector,0,&partInfo)==0)	/* erase range */
 				{
-					if(LPCISP_WriteToFlash(fd,buffer,start,length,&partInfo)==0)	/* write to flash */
+					if(LPCISP_WriteToFlash(fd,&cfg,buffer,start,length,&partInfo)==0)	/* write to flash */
 					{
-						LPCISP_ExitISPMode(fd);				/* exit ISP mode, start application */
+						LPCISP_ExitISPMode(fd,&cfg,&partInfo);				/* exit ISP mode, start application */
 						fprintf(stderr,"success!\n");
 						return(0);
 					}
 					else
 					{
-						fprintf(stderr,"failed to erase device\n");
+						fprintf(stderr,"failed to write\n");
 					}
 				}
 				else

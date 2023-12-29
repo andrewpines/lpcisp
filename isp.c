@@ -861,7 +861,7 @@ int LPCISP_Erase(int fd, lpcispcfg_t *cfg, int startSector, int endSector, int b
 	char
 		buffer[256];
 
-	if(startSector<=endSector)
+	if((startSector>=0)&&(endSector>=startSector))
 	{
 		if(PrepareSectorsForWrite(fd,cfg,startSector,endSector,0,partInfo)) 
 		{
@@ -891,6 +891,7 @@ int LPCISP_Erase(int fd, lpcispcfg_t *cfg, int startSector, int endSector, int b
 			}
 		}
 	}
+	ReportString(REPORT_ERROR,"failed to erase device\n");
 	return(-1);
 }
 
@@ -1050,7 +1051,7 @@ int LPCISP_ReadBootCodeVersion(int fd, lpcispcfg_t *cfg, unsigned char *major, u
 }
 
 int LPCISP_ReadFromTarget(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigned int addr, unsigned int count, partinfo_t *partInfo)
-// read a block of data from RAM.
+// read a block of data from RAM.  return 0 on success, -1 on any error.
 {
 
 	char
@@ -1144,6 +1145,67 @@ int LPCISP_ReadFromTarget(int fd, lpcispcfg_t *cfg, unsigned char *data, unsigne
 
 }
 
+int LPCISP_VerifyFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned int start,unsigned int length,partinfo_t *partInfo)
+// verify that flash matches data.  will fail if read-protected.
+{
+	unsigned int
+		addr,
+		off;
+	int
+		i,
+		fail;
+	unsigned char
+		buffer[256];
+
+	// make adjustments to range for areas this specific device can't read back
+	off=0;
+	if((partInfo->flags&SKIP_0)&&(start==0))
+	{
+		// device can't read word 0 in flash, skip over it
+		length-=4;
+		start=4;
+		off=4;
+	}
+	if((partInfo->flags&VECT_REMAP64)&&(start<64))
+	{
+		// device remaps vector table in ISP mode, so we can't verify that section
+		length-=(64-start);
+		start=64;
+		off=64;
+	}
+	else if((partInfo->flags&VECT_REMAP256)&&(start<256))
+	{
+		// device remaps vector table in ISP mode, so we can't verify that section
+		length-=(256-start);
+		start=256;
+		off=256;
+	}
+
+	ReportString(REPORT_INFO,"verifying... 0x%08x",start);
+	fail=0;
+	for(addr=start;!fail&&(addr<start+length);addr+=256)
+	{
+		// read remaining bytes, up to 256 (must be multiple of four)
+		fail=(LPCISP_ReadFromTarget(fd,cfg,buffer,addr,MIN((length-(addr-start)+3)&~3,256),partInfo)<0);
+		if(!fail)
+		{
+			for(i=0;!fail&&(i<MIN(length-(addr-start),256));i++)
+			{
+				fail=buffer[i]!=data[off+addr-start+i];
+				if(fail)
+				{
+					ReportString(REPORT_INFO," -- mismatch at 0x%08x, is 0x%02x, should be 0x%02x\n",addr+i,buffer[i],data[off+addr-start+i]);;
+				}
+			}
+		}
+		if(!fail)
+		{
+			ReportString(REPORT_INFO,"\b\b\b\b\b\b\b\b%08x",addr+MIN(length-(addr-start),256));
+		}
+	}
+	ReportString(REPORT_INFO,"\nverify %s\n",!fail?"complete":"failed");
+	return(fail?-1:0);
+}
 
 int LPCISP_WriteToFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned int addr,unsigned int length,partinfo_t *partInfo)
 // write 256 bytes of flash at a time (the minimum block size)
@@ -1173,9 +1235,9 @@ int LPCISP_WriteToFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned in
 			bytesToWrite=MIN(length,partInfo->flashBlockSize);
 			memcpy(buffer,data,bytesToWrite);
 			memset(&buffer[bytesToWrite],0xff,partInfo->flashBlockSize-bytesToWrite);
-			if(WriteToRAM(fd,cfg,partInfo->flashBlockRAMBase,(bytesToWrite+3)&~3,buffer,partInfo))
+			if(WriteToRAM(fd,cfg,partInfo->flashBlockRAMBase,(partInfo->flashBlockSize+3)&~3,buffer,partInfo))
 			{
-				ReportString(REPORT_DEBUG_PROCESS,"copied %d bytes into RAM for 0x%08x\n",bytesToWrite,addr);
+				ReportString(REPORT_DEBUG_PROCESS,"copied %d bytes into RAM for 0x%08x\n",partInfo->flashBlockSize,addr);
 				// prepare the sector for writing
 				curSector=LPCISP_GetSectorAddr(addr,partInfo);	// get number of the sector containing address of this block
 				if(curSector>=0)
@@ -1219,6 +1281,7 @@ int LPCISP_WriteToFlash(int fd, lpcispcfg_t *cfg,unsigned char *data,unsigned in
 		free(buffer);
 	}
 	ReportString(REPORT_INFO,"\n");
+	ReportString(REPORT_INFO,"%s\n",!fail?"write complete":"failed to write\n");
 	return(fail?-1:0);
 }
 

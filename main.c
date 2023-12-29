@@ -480,8 +480,6 @@ int main(int argc,char *argv[])
 		fail;
 	char
 		*progName;
-	unsigned char
-		buffer[256];
 	const char
 		*errString[]=
 		{
@@ -631,15 +629,7 @@ int main(int argc,char *argv[])
 							startSector=LPCISP_GetSectorAddr(start,&partInfo);
 							endSector=LPCISP_GetSectorAddr(start+length,&partInfo);
 						}
-						fail=((startSector<0)||(endSector<0));
-						if(!fail)
-						{
-							fail=(LPCISP_Erase(fd,&cfg,startSector,endSector,0,&partInfo)<0);	// @@@ only support bank zero for now
-						}
-						if(fail)
-						{
-							ReportString(REPORT_ERROR,"failed to erase device\n");
-						}
+						fail=(LPCISP_Erase(fd,&cfg,startSector,endSector,0,&partInfo)<0);	// @@@ only support bank zero for now
 					}
 
 					// if data image was loaded we can write it to flash and/or verify it
@@ -655,60 +645,12 @@ int main(int argc,char *argv[])
 						if(burn)
 						{
 							fail=(LPCISP_WriteToFlash(fd,&cfg,data,start,length,&partInfo)<0);
-							ReportString(REPORT_INFO,"%s\n",!fail?"write complete":"failed to write\n");
 						}
 
 						// compare image against flash
 						if(!fail&&verify)
 						{
-							unsigned int
-								addr,
-								off;
-							
-							off=0;
-							if((partInfo.flags&SKIP_0)&&(start==0))
-							{
-								// device can't read word 0 in flash, skip over it
-								length-=4;
-								start=4;
-								off=4;
-							}
-							if((partInfo.flags&VECT_REMAP64)&&(start<64))
-							{
-								// device remaps vector table in ISP mode, so we can't verify that section
-								length-=(64-start);
-								start=64;
-								off=64;
-							}
-							else if((partInfo.flags&VECT_REMAP256)&&(start<256))
-							{
-								// device remaps vector table in ISP mode, so we can't verify that section
-								length-=(256-start);
-								start=256;
-								off=256;
-							}
-							ReportString(REPORT_INFO,"verifying... 0x%08x",start);
-							for(addr=start;!fail&&(addr<start+length);addr+=256)
-							{
-								// read remaining bytes, up to 256 (must be multiple of four)
-								fail=(LPCISP_ReadFromTarget(fd,&cfg,buffer,addr,MIN((length-(addr-start)+3)&~3,256),&partInfo)<0);
-								if(!fail)
-								{
-									for(i=0;!fail&&(i<MIN(length-(addr-start),256));i++)
-									{
-										fail=buffer[i]!=data[off+addr-start+i];
-										if(fail)
-										{
-											ReportString(REPORT_INFO," -- mismatch at 0x%08x, is 0x%02x, should be 0x%02x\n",addr+i,buffer[i],data[off+addr-start+i]);;
-										}
-									}
-								}
-								if(!fail)
-								{
-									ReportString(REPORT_INFO,"\b\b\b\b\b\b\b\b%08x",addr+MIN(length-(addr-start),256));
-								}
-							}
-							ReportString(REPORT_INFO,"\nverify %s\n",!fail?"complete":"failed");
+							fail=(LPCISP_VerifyFlash(fd,&cfg,data,start,length,&partInfo)<0);
 						}
 						free(data);
 					}
